@@ -6,7 +6,7 @@ import java.util.Objects;
 import javax.sql.DataSource;
 
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
-import com.omnizia.pubmedservice.util.DbSelector;
+import com.omnizia.pubmedservice.util.DbSelectorUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -29,7 +29,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 @EnableJpaRepositories(basePackages = "com.omnizia.pubmedservice.repository")
 public class DataSourceConfig {
 
-  @Bean(name = DbSelector.MCD)
+  @Bean(name = DbSelectorUtils.MCD)
   public DataSource dataSource1() {
     DriverManagerDataSource dataSource = new DriverManagerDataSource();
     dataSource.setUrl(
@@ -41,7 +41,7 @@ public class DataSourceConfig {
     return dataSource;
   }
 
-  @Bean(name = DbSelector.OLAM)
+  @Bean(name = DbSelectorUtils.OLAM)
   public DataSource dataSource2() {
     DriverManagerDataSource dataSource = new DriverManagerDataSource();
     dataSource.setUrl(
@@ -53,7 +53,7 @@ public class DataSourceConfig {
     return dataSource;
   }
 
-  @Bean(name = DbSelector.JOB_CONFIG)
+  @Bean(name = DbSelectorUtils.JOB_CONFIG)
   public DataSource dataSource() {
     DriverManagerDataSource dataSource = new DriverManagerDataSource();
     dataSource.setUrl("jdbc:postgresql://localhost:5433/spring_batch_db");

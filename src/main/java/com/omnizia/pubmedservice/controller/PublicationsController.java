@@ -5,11 +5,12 @@ import java.util.List;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.PublicationsDto;
 import com.omnizia.pubmedservice.service.PublicationsService;
-import com.omnizia.pubmedservice.util.DbSelector;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static com.omnizia.pubmedservice.util.DbSelectorUtils.MCD;
 
 @Slf4j
 @RestController
@@ -22,7 +23,7 @@ public class PublicationsController {
   @GetMapping
   ResponseEntity<List<PublicationsDto>> getPublications() {
     try {
-      DataSourceContextHolder.setDataSourceType(DbSelector.MCD);
+      DataSourceContextHolder.setDataSourceType(MCD);
       List<PublicationsDto> publications = pubService.getPublications();
       log.info("Getting publications from {}", DataSourceContextHolder.getDataSourceType());
       return ResponseEntity.ok(publications);
@@ -35,7 +36,7 @@ public class PublicationsController {
   public ResponseEntity<List<PublicationsDto>> getPublicationsByOmniziaId(
       @PathVariable("omnizia_id") String omniziaId) {
     try {
-      DataSourceContextHolder.setDataSourceType(DbSelector.MCD);
+      DataSourceContextHolder.setDataSourceType(MCD);
       List<PublicationsDto> publications = pubService.getPublicationsByOmniziaId(omniziaId);
 
       String selectedDb = DataSourceContextHolder.getDataSourceType();

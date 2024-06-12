@@ -8,5 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UudidRepository extends JpaRepository<Uudid, String> {
+
   List<Uudid> findAllByHcpId(String hcpId);
 }

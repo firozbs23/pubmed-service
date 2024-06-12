@@ -1,9 +1,9 @@
 package com.omnizia.pubmedservice.config;
 
-import com.omnizia.pubmedservice.batchjob.MyItemProcessor;
-import com.omnizia.pubmedservice.batchjob.MyItemReader;
-import com.omnizia.pubmedservice.batchjob.MyItemWriter;
-import com.omnizia.pubmedservice.dto.TestDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.omnizia.pubmedservice.hcpbatchjob.MyItemProcessor;
+import com.omnizia.pubmedservice.hcpbatchjob.HcpItemReader;
+import com.omnizia.pubmedservice.hcpbatchjob.MyItemWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -27,6 +27,7 @@ public class BatchJobConfig {
 
   private final JobRepository jobRepository;
   private final PlatformTransactionManager platformTransactionManager;
+  private final ObjectMapper mapper;
 
   @Bean
   public Job processJob(Step step) {
@@ -35,11 +36,11 @@ public class BatchJobConfig {
 
   @Bean
   public Step step(
-      ItemReader<TestDto> reader,
-      ItemProcessor<TestDto, TestDto> processor,
-      ItemWriter<TestDto> writer) {
+      ItemReader<String> reader,
+      ItemProcessor<String, String> processor,
+      ItemWriter<String> writer) {
     return new StepBuilder("step", jobRepository)
-        .<TestDto, TestDto>chunk(10, platformTransactionManager)
+        .<String, String>chunk(10, platformTransactionManager)
         .reader(reader)
         .processor(processor)
         .writer(writer)
@@ -48,18 +49,20 @@ public class BatchJobConfig {
 
   @Bean
   @StepScope
-  public ItemReader<TestDto> reader() {
-    return new MyItemReader();
+  public ItemReader<String> reader(
+      @Value("#{jobParameters['job_id']}") String jobId,
+      @Value("#{jobParameters['data']}") String data) {
+    return new HcpItemReader(jobId, data, mapper);
   }
 
   @Bean
-  public ItemProcessor<TestDto, TestDto> processor() {
+  public ItemProcessor<String, String> processor() {
     return new MyItemProcessor();
   }
 
   @Bean
   @StepScope
-  public ItemWriter<TestDto> writer(@Value("#{jobParameters['jobId']}") String jobId) {
+  public ItemWriter<String> writer(@Value("#{jobParameters['jobId']}") String jobId) {
     return new MyItemWriter(jobId);
   }
 }

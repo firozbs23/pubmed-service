@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import static com.omnizia.pubmedservice.util.FileType.*;
+import static com.omnizia.pubmedservice.util.FileTypeUtils.*;
 
 @Service
 public class FileProcessingService {

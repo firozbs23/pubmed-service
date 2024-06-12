@@ -5,11 +5,12 @@ import java.util.List;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.service.UudidService;
-import com.omnizia.pubmedservice.util.DbSelector;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static com.omnizia.pubmedservice.util.DbSelectorUtils.MCD;
 
 @Slf4j
 @RestController
@@ -22,7 +23,7 @@ public class UudidController {
   @GetMapping
   ResponseEntity<List<UudidDto>> getUudids() {
     try {
-      DataSourceContextHolder.setDataSourceType(DbSelector.MCD);
+      DataSourceContextHolder.setDataSourceType(MCD);
       List<UudidDto> publications = uudidService.getUudids();
       log.info("Getting uudids from {}", DataSourceContextHolder.getDataSourceType());
       return ResponseEntity.ok(publications);
@@ -35,7 +36,7 @@ public class UudidController {
   public ResponseEntity<List<UudidDto>> getUudidByOmniziaId(
       @PathVariable("omnizia_id") String omniziaId) {
     try {
-      DataSourceContextHolder.setDataSourceType(DbSelector.MCD);
+      DataSourceContextHolder.setDataSourceType(MCD);
       List<UudidDto> publications = uudidService.getUudidsByOmniziaId(omniziaId);
       log.info("Getting uudids by omnizia_id from {}", DataSourceContextHolder.getDataSourceType());
       return ResponseEntity.ok(publications);

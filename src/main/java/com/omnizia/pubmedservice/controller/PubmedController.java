@@ -1,7 +1,9 @@
 package com.omnizia.pubmedservice.controller;
 
+import com.omnizia.pubmedservice.dto.JobStatusDto;
 import com.omnizia.pubmedservice.service.FileProcessingService;
-import com.omnizia.pubmedservice.util.FileType;
+import com.omnizia.pubmedservice.service.PubmedService;
+import com.omnizia.pubmedservice.util.FileTypeUtils;
 import com.omnizia.pubmedservice.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,31 +22,37 @@ import java.util.Optional;
 public class PubmedController {
 
   private final FileProcessingService fileProcessingService;
+  private final PubmedService pubmedService;
 
-  @PostMapping("/upload")
-  public ResponseEntity<?> uploadFile(
+  @PostMapping
+  public ResponseEntity<JobStatusDto> uploadFile(
       @RequestParam("file") MultipartFile file,
       @RequestParam("file_type") Optional<String> type,
-      @RequestParam("id_column") Optional<String> idColumn,
+      @RequestParam("id_column_name") Optional<String> idColumnName,
       @RequestParam("job_title") Optional<String> title) {
 
-    String omniziaId = idColumn.orElse("omnizia_id");
-    String fileType = type.orElse(FileType.CSV);
+    String omniziaId = idColumnName.orElse("omnizia_id");
+    String fileType = type.orElse(FileTypeUtils.CSV);
     String jobTitle = title.orElse(StringUtils.EMPTY);
 
     try {
       List<String> omniziaIds = fileProcessingService.processFile(file, fileType, omniziaId);
-      return ResponseEntity.ok(omniziaIds);
+      JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
+      return ResponseEntity.ok(jobStatus);
     } catch (IOException e) {
-      return ResponseEntity.status(500).body("Failed to process file: " + e.getMessage());
+      throw new RuntimeException("Error while processing file", e);
     } catch (IllegalArgumentException e) {
-      return ResponseEntity.badRequest().body(e.getMessage());
+      throw new IllegalArgumentException("Invalid file type", e);
     }
   }
 
   @PostMapping("/{omnizia_id}")
-  public ResponseEntity<?> processFile(@PathVariable("omnizia_id") String omniziaId) {
+  public ResponseEntity<JobStatusDto> processFile(
+      @PathVariable("omnizia_id") String omniziaId,
+      @RequestParam("job_title") Optional<String> title) {
     List<String> omniziaIds = List.of(omniziaId);
-    return ResponseEntity.ok(omniziaIds);
+    String jobTitle = title.orElse(StringUtils.EMPTY);
+    JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
+    return ResponseEntity.ok(jobStatus);
   }
 }
