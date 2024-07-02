@@ -1,6 +1,7 @@
 package com.omnizia.pubmedservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -118,6 +119,10 @@ public class PubmedDto {
   @JsonProperty("mesh_terms")
   @Builder.Default
   private String meshTerms = "";
+
+  @JsonProperty("search_name")
+  @Builder.Default
+  private String searchName = "";
 
   @JsonProperty("timestamp")
   @Builder.Default

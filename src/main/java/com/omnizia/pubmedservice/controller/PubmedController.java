@@ -1,8 +1,12 @@
 package com.omnizia.pubmedservice.controller;
 
+import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.JobStatusDto;
+import com.omnizia.pubmedservice.entity.PubmedData;
 import com.omnizia.pubmedservice.service.FileProcessingService;
+import com.omnizia.pubmedservice.service.JobDataService;
 import com.omnizia.pubmedservice.service.PubmedService;
+import com.omnizia.pubmedservice.util.DbSelectorUtils;
 import com.omnizia.pubmedservice.util.FileTypeUtils;
 import com.omnizia.pubmedservice.util.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -23,6 +28,7 @@ public class PubmedController {
 
   private final FileProcessingService fileProcessingService;
   private final PubmedService pubmedService;
+  private final JobDataService jobDataService;
 
   @PostMapping
   public ResponseEntity<JobStatusDto> uploadFile(
@@ -36,7 +42,9 @@ public class PubmedController {
     String jobTitle = title.orElse(StringUtils.EMPTY);
 
     try {
+      DataSourceContextHolder.setDataSourceType(DbSelectorUtils.OLAM);
       List<String> omniziaIds = fileProcessingService.processFile(file, fileType, omniziaId);
+      log.info("Total omnizia id found : {}", omniziaIds.size());
       JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
       log.info("Current thread: {}", Thread.currentThread());
       return ResponseEntity.ok(jobStatus);
@@ -44,6 +52,8 @@ public class PubmedController {
       throw new RuntimeException("Error while processing file", e);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid file type", e);
+    } finally {
+      DataSourceContextHolder.clearDataSourceType();
     }
   }
 
@@ -51,9 +61,33 @@ public class PubmedController {
   public ResponseEntity<JobStatusDto> processFile(
       @PathVariable("omnizia_id") String omniziaId,
       @RequestParam("job_title") Optional<String> title) {
-    List<String> omniziaIds = List.of(omniziaId);
+    try {
+      DataSourceContextHolder.setDataSourceType(DbSelectorUtils.OLAM);
+      List<String> omniziaIds = List.of(omniziaId);
+      String jobTitle = title.orElse(StringUtils.EMPTY);
+      JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
+      return ResponseEntity.ok(jobStatus);
+    } finally {
+      DataSourceContextHolder.clearDataSourceType();
+    }
+  }
+
+  @GetMapping
+  public ResponseEntity<List<PubmedData>> getPubmedByJobId(
+      @RequestParam("job_id") UUID jobId,
+      @RequestParam("file_type") Optional<String> type,
+      @RequestParam("job_title") Optional<String> title) {
+
+    String fileType = type.orElse(FileTypeUtils.CSV);
     String jobTitle = title.orElse(StringUtils.EMPTY);
-    JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
-    return ResponseEntity.ok(jobStatus);
+
+    try {
+      DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
+      List<PubmedData> pubmedData = jobDataService.getPubmedDataByJobId(jobId);
+      log.info("Current thread: {}", Thread.currentThread());
+      return ResponseEntity.ok(pubmedData);
+    } finally {
+      DataSourceContextHolder.clearDataSourceType();
+    }
   }
 }

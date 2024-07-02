@@ -1,6 +1,7 @@
 package com.omnizia.pubmedservice.service;
 
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
+import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.util.DbSelectorUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ public class JobLauncherService {
   private final JobDataService jobDataService;
   private final Job job;
 
-  public void runJob(UUID uuid, List<String> omniziaIds, String jobTitle) {
+  public void runJob(UUID uuid, List<UudidDto> uudidDtos, String jobTitle) {
     Thread.ofVirtual()
         .start(
             () -> {
@@ -35,7 +36,7 @@ public class JobLauncherService {
                 log.info("Running job with job_id: {} in DB: {}", uuid, selectedDb);
                 log.info("Current thread: {}", Thread.currentThread());
 
-                jobDataService.saveOmniziaIds(uuid, omniziaIds, jobTitle);
+                jobDataService.saveJobData(uuid, uudidDtos, jobTitle);
 
                 JobParameters jobParameters =
                     new JobParametersBuilder()

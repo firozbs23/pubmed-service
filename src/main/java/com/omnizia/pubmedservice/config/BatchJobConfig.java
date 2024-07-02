@@ -1,5 +1,7 @@
 package com.omnizia.pubmedservice.config;
 
+import com.omnizia.pubmedservice.entity.JobData;
+import com.omnizia.pubmedservice.entity.PubmedData;
 import com.omnizia.pubmedservice.hcpbatchjob.MyItemProcessor;
 import com.omnizia.pubmedservice.hcpbatchjob.HcpItemReader;
 import com.omnizia.pubmedservice.hcpbatchjob.MyItemWriter;
@@ -19,6 +21,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 @Configuration
 @EnableBatchProcessing
@@ -28,6 +33,7 @@ public class BatchJobConfig {
   private final JobRepository jobRepository;
   private final PlatformTransactionManager platformTransactionManager;
   private final JobDataService jobDataService;
+  private final RestTemplate restTemplate;
 
   @Bean
   public Job processJob(Step step) {
@@ -36,11 +42,11 @@ public class BatchJobConfig {
 
   @Bean
   public Step step(
-      ItemReader<String> reader,
-      ItemProcessor<String, String> processor,
-      ItemWriter<String> writer) {
+      ItemReader<JobData> reader,
+      ItemProcessor<JobData, List<PubmedData>> processor,
+      ItemWriter<List<PubmedData>> writer) {
     return new StepBuilder("step", jobRepository)
-        .<String, String>chunk(10, platformTransactionManager)
+        .<JobData, List<PubmedData>>chunk(10, platformTransactionManager)
         .reader(reader)
         .processor(processor)
         .writer(writer)
@@ -49,18 +55,18 @@ public class BatchJobConfig {
 
   @Bean
   @StepScope
-  public ItemReader<String> reader(@Value("#{jobParameters['job_id']}") String jobId) {
+  public ItemReader<JobData> reader(@Value("#{jobParameters['job_id']}") String jobId) {
     return new HcpItemReader(jobId, jobDataService);
   }
 
   @Bean
-  public ItemProcessor<String, String> processor() {
-    return new MyItemProcessor();
+  public ItemProcessor<JobData, List<PubmedData>> processor() {
+    return new MyItemProcessor(restTemplate);
   }
 
   @Bean
   @StepScope
-  public ItemWriter<String> writer(@Value("#{jobParameters['job_id']}") String jobId) {
-    return new MyItemWriter(jobId);
+  public ItemWriter<List<PubmedData>> writer(@Value("#{jobParameters['job_id']}") String jobId) {
+    return new MyItemWriter(jobId, jobDataService);
   }
 }

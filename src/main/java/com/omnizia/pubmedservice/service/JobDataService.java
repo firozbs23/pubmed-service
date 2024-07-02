@@ -1,15 +1,16 @@
 package com.omnizia.pubmedservice.service;
 
+import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.entity.JobData;
 import com.omnizia.pubmedservice.entity.JobStatus;
-import com.omnizia.pubmedservice.repository.JobDataRepository;
+import com.omnizia.pubmedservice.entity.PubmedData;
 import com.omnizia.pubmedservice.repository.JobStatusRepository;
+import com.omnizia.pubmedservice.repository.PubmedDataRepository;
 import com.omnizia.pubmedservice.util.JobStatusUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.Job;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -23,41 +24,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JobDataService {
 
-  private final JobDataRepository jobDataRepository;
   private final JobStatusRepository jobStatusRepository;
-
-  public JobData updateJobData(UUID id, JobData updatedJobData) {
-    Optional<JobData> existingJobDataOptional = jobDataRepository.findById(id);
-    if (existingJobDataOptional.isPresent()) {
-      JobData existingJobData = existingJobDataOptional.get();
-
-      // Update fields except for id and job_id
-      existingJobData.setTransactionViqId(updatedJobData.getTransactionViqId());
-      existingJobData.setHcpViqId(updatedJobData.getHcpViqId());
-      existingJobData.setCountryIso2(updatedJobData.getCountryIso2());
-      existingJobData.setSpecialtyCode(updatedJobData.getSpecialtyCode());
-      existingJobData.setPublicationId(updatedJobData.getPublicationId());
-      existingJobData.setTitle(updatedJobData.getTitle());
-      existingJobData.setJournal(updatedJobData.getJournal());
-      existingJobData.setPublicationDate(updatedJobData.getPublicationDate());
-      existingJobData.setAbstractValue(updatedJobData.getAbstractValue());
-      existingJobData.setHcpRole(updatedJobData.getHcpRole());
-      existingJobData.setPublicationType(updatedJobData.getPublicationType());
-      existingJobData.setIssn(updatedJobData.getIssn());
-      existingJobData.setUrl(updatedJobData.getUrl());
-      existingJobData.setGdsTagViqId(updatedJobData.getGdsTagViqId());
-      existingJobData.setHcpRoleViqId(updatedJobData.getHcpRoleViqId());
-      existingJobData.setKey(updatedJobData.getKey());
-      existingJobData.setCreatedByJob(updatedJobData.getCreatedByJob());
-      existingJobData.setUpdatedByJob(updatedJobData.getUpdatedByJob());
-      existingJobData.setCreatedAt(updatedJobData.getCreatedAt());
-      existingJobData.setUpdatedAt(updatedJobData.getUpdatedAt());
-
-      return jobDataRepository.save(existingJobData);
-    } else {
-      throw new EntityNotFoundException("JobData with id " + id + " not found");
-    }
-  }
+  private final PubmedDataRepository pubmedDataRepository;
 
   public JobStatus updateJobStatus(UUID jobId, String newStatus, OffsetDateTime newTimestamp) {
     Optional<JobStatus> existingJobStatusOptional = jobStatusRepository.findById(jobId);
@@ -74,12 +42,8 @@ public class JobDataService {
     }
   }
 
-  public List<String> getAllHcpViqIdsByJobId(UUID jobId) {
-    return jobDataRepository.findAllHcpViqIdByJobId(jobId);
-  }
-
   @Transactional
-  public void saveOmniziaIds(UUID uuid, List<String> omniziaIds, String jobTitle) {
+  public void saveJobData(UUID uuid, List<UudidDto> uudidDtos, String jobTitle) {
 
     JobStatus jobStatus = new JobStatus();
     jobStatus.setJobId(uuid);
@@ -87,12 +51,30 @@ public class JobDataService {
     jobStatus.setJobStatus(JobStatusUtils.RUNNING);
     List<JobData> jobDataList = new ArrayList<>();
 
-    for (String omniziaId : omniziaIds) {
+    for (UudidDto uudidDto : uudidDtos) {
       jobDataList.add(
-          JobData.builder().id(UUID.randomUUID()).jobId(uuid).hcpViqId(omniziaId).build());
+          JobData.builder()
+              .jobId(uuid)
+              .hcpViqId(uudidDto.getHcpId())
+              .matchingExternalId(uudidDto.getMatchingExternalId())
+              .timestamp(OffsetDateTime.now())
+              .build());
     }
     jobStatus.setJobDataList(jobDataList);
-
     jobStatusRepository.save(jobStatus);
+  }
+
+  public List<JobData> getAllJobDataByJobId(UUID uuid) {
+    Optional<JobStatus> jobStatus = jobStatusRepository.findById(uuid);
+    if (jobStatus.isPresent()) return jobStatus.get().getJobDataList();
+    return List.of();
+  }
+
+  public void saveJobDataList(List<PubmedData> jobDataList) {
+    pubmedDataRepository.saveAll(jobDataList);
+  }
+
+  public List<PubmedData> getPubmedDataByJobId(UUID jobId) {
+    return pubmedDataRepository.findByJobId(jobId);
   }
 }
