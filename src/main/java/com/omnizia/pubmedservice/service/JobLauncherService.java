@@ -1,6 +1,5 @@
 package com.omnizia.pubmedservice.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.util.DbSelectorUtils;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.omnizia.pubmedservice.util.JobParamUtils.*;
-import static com.omnizia.pubmedservice.util.JobParamUtils.DATA;
 
 @Slf4j
 @Service
@@ -24,8 +22,8 @@ import static com.omnizia.pubmedservice.util.JobParamUtils.DATA;
 public class JobLauncherService {
 
   private final JobLauncher jobLauncher;
+  private final JobDataService jobDataService;
   private final Job job;
-  private final ObjectMapper mapper;
 
   public void runJob(UUID uuid, List<String> omniziaIds, String jobTitle) {
     Thread.ofVirtual()
@@ -35,12 +33,15 @@ public class JobLauncherService {
                 DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
                 String selectedDb = DataSourceContextHolder.getDataSourceType();
                 log.info("Running job with job_id: {} in DB: {}", uuid, selectedDb);
+                log.info("Current thread: {}", Thread.currentThread());
+
+                jobDataService.saveOmniziaIds(uuid, omniziaIds, jobTitle);
+
                 JobParameters jobParameters =
                     new JobParametersBuilder()
                         .addDate(START_AT, new Date())
                         .addString(JOB_ID, uuid.toString())
                         .addString(JOB_TITLE, jobTitle)
-                        .addString(DATA, mapper.writeValueAsString(omniziaIds))
                         .toJobParameters();
                 jobLauncher.run(job, jobParameters);
               } catch (Exception e) {

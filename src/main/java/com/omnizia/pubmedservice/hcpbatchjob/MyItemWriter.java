@@ -24,6 +24,7 @@ public class MyItemWriter implements ItemWriter<String> {
     log.info("Chunk size : {}", omniziaIds.size());
 
     // TODO:
+    log.info("Current Thread Name: {}", Thread.currentThread());
 
     log.info("Chunk size after status changed : {}", omniziaIds.size());
     log.info("Chunk data saved.");

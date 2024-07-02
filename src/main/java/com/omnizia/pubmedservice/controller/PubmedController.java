@@ -38,6 +38,7 @@ public class PubmedController {
     try {
       List<String> omniziaIds = fileProcessingService.processFile(file, fileType, omniziaId);
       JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
+      log.info("Current thread: {}", Thread.currentThread());
       return ResponseEntity.ok(jobStatus);
     } catch (IOException e) {
       throw new RuntimeException("Error while processing file", e);
