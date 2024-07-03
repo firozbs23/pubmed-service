@@ -3,6 +3,7 @@ package com.omnizia.pubmedservice.controller;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.JobStatusDto;
 import com.omnizia.pubmedservice.dto.PubmedDto;
+import com.omnizia.pubmedservice.exception.CustomException;
 import com.omnizia.pubmedservice.service.FileProcessingService;
 import com.omnizia.pubmedservice.service.JobDataService;
 import com.omnizia.pubmedservice.service.PubmedService;
@@ -11,6 +12,8 @@ import com.omnizia.pubmedservice.util.FileTypeUtils;
 import com.omnizia.pubmedservice.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -88,5 +91,42 @@ public class PubmedController {
     } finally {
       DataSourceContextHolder.clearDataSourceType();
     }
+  }
+
+  @GetMapping("/file")
+  public ResponseEntity<byte[]> getPubmedDataInFile(
+      @RequestParam("job_id") UUID jobId,
+      @RequestParam("file_type") Optional<String> type,
+      @RequestParam("job_title") Optional<String> title)
+      throws IOException {
+
+    String fileType = type.orElse(FileTypeUtils.CSV);
+    String jobTitle = title.orElse(StringUtils.EMPTY);
+
+    byte[] fileInBytes;
+    String fileFormat;
+    HttpHeaders headers = new HttpHeaders();
+
+    if (fileType.equalsIgnoreCase("csv")) {
+      fileInBytes = pubmedService.getPubmedDataInCSV(jobId);
+      fileFormat = ".csv";
+      headers.setContentType(MediaType.parseMediaType("text/csv"));
+    } else if (fileType.equalsIgnoreCase("xlsx")) {
+      fileInBytes = pubmedService.getPubmedDataInXLSX(jobId);
+      fileFormat = ".xlsx";
+      headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+    } else
+      throw new CustomException(
+          "Wrong File Type", "Please provide file_type. File type must be either csv or xlsx.");
+
+    JobStatusDto jobStatusDto = pubmedService.getJobStatusByJobId(jobId);
+    String fileName = jobStatusDto.getJobTitle();
+    if (fileName != null && !fileName.trim().isEmpty())
+      fileName = fileName.replace(" ", "-") + fileFormat;
+    else fileName = "data" + fileFormat;
+
+    headers.setContentDispositionFormData("attachment", fileName);
+    headers.setContentLength(fileInBytes.length);
+    return ResponseEntity.ok().headers(headers).body(fileInBytes);
   }
 }
