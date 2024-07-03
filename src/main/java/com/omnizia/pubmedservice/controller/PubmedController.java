@@ -2,7 +2,7 @@ package com.omnizia.pubmedservice.controller;
 
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.JobStatusDto;
-import com.omnizia.pubmedservice.entity.PubmedData;
+import com.omnizia.pubmedservice.dto.PubmedDto;
 import com.omnizia.pubmedservice.service.FileProcessingService;
 import com.omnizia.pubmedservice.service.JobDataService;
 import com.omnizia.pubmedservice.service.PubmedService;
@@ -46,7 +46,6 @@ public class PubmedController {
       List<String> omniziaIds = fileProcessingService.processFile(file, fileType, omniziaId);
       log.info("Total omnizia id found : {}", omniziaIds.size());
       JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
-      log.info("Current thread: {}", Thread.currentThread());
       return ResponseEntity.ok(jobStatus);
     } catch (IOException e) {
       throw new RuntimeException("Error while processing file", e);
@@ -73,7 +72,7 @@ public class PubmedController {
   }
 
   @GetMapping
-  public ResponseEntity<List<PubmedData>> getPubmedByJobId(
+  public ResponseEntity<List<PubmedDto>> getPubmedByJobId(
       @RequestParam("job_id") UUID jobId,
       @RequestParam("file_type") Optional<String> type,
       @RequestParam("job_title") Optional<String> title) {
@@ -83,7 +82,7 @@ public class PubmedController {
 
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
-      List<PubmedData> pubmedData = jobDataService.getPubmedDataByJobId(jobId);
+      List<PubmedDto> pubmedData = jobDataService.getPubmedDataByJobId(jobId);
       log.info("Current thread: {}", Thread.currentThread());
       return ResponseEntity.ok(pubmedData);
     } finally {

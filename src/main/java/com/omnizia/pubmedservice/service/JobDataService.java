@@ -1,9 +1,11 @@
 package com.omnizia.pubmedservice.service;
 
+import com.omnizia.pubmedservice.dto.PubmedDto;
 import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.entity.JobData;
 import com.omnizia.pubmedservice.entity.JobStatus;
 import com.omnizia.pubmedservice.entity.PubmedData;
+import com.omnizia.pubmedservice.mapper.PubmedMapper;
 import com.omnizia.pubmedservice.repository.JobStatusRepository;
 import com.omnizia.pubmedservice.repository.PubmedDataRepository;
 import com.omnizia.pubmedservice.util.JobStatusUtils;
@@ -44,7 +46,6 @@ public class JobDataService {
 
   @Transactional
   public void saveJobData(UUID uuid, List<UudidDto> uudidDtos, String jobTitle) {
-
     JobStatus jobStatus = new JobStatus();
     jobStatus.setJobId(uuid);
     jobStatus.setJobTitle(jobTitle);
@@ -55,6 +56,7 @@ public class JobDataService {
       jobDataList.add(
           JobData.builder()
               .jobId(uuid)
+              .jobTitle(jobTitle)
               .hcpViqId(uudidDto.getHcpId())
               .matchingExternalId(uudidDto.getMatchingExternalId())
               .timestamp(OffsetDateTime.now())
@@ -74,7 +76,8 @@ public class JobDataService {
     pubmedDataRepository.saveAll(jobDataList);
   }
 
-  public List<PubmedData> getPubmedDataByJobId(UUID jobId) {
-    return pubmedDataRepository.findByJobId(jobId);
+  public List<PubmedDto> getPubmedDataByJobId(UUID jobId) {
+    List<PubmedData> pubmedData = pubmedDataRepository.findByJobId(jobId);
+    return PubmedMapper.mapToPubmedDto(pubmedData);
   }
 }

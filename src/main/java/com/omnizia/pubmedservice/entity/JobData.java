@@ -34,9 +34,9 @@ public class JobData {
   @Column(name = "hcp_viq_id")
   private String hcpViqId;
 
-  @JsonProperty("title")
-  @Column(name = "title")
-  private String title;
+  @JsonProperty("job_title")
+  @Column(name = "job_title")
+  private String jobTitle;
 
   @JsonProperty("matching_external_id")
   @Column(name = "matching_external_id")

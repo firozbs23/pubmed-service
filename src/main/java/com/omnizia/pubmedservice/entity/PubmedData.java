@@ -24,10 +24,7 @@ public class PubmedData {
   private UUID id;
 
   @JsonProperty("job_id")
-  @Column(
-      name = "job_id",
-      insertable = false,
-      updatable = false) // Optional, to prevent changes to the job_id in JobData
+  @Column(name = "job_id")
   private UUID jobId;
 
   @JsonProperty("job_title")
@@ -96,7 +93,7 @@ public class PubmedData {
 
   @JsonProperty("key")
   @Column(name = "key")
-  private Long key;
+  private String key;
 
   @JsonProperty("created_by_job")
   @Column(name = "created_by_job")

@@ -26,7 +26,6 @@ public class HcpItemReader implements ItemReader<JobData> {
       if (jobDataList != null) {
         dataIterator = jobDataList.iterator();
         log.info("Read item size : {}", jobDataList.size());
-        log.info("Current thead: {}", Thread.currentThread());
       } else log.info("Not able to read item.");
     }
 

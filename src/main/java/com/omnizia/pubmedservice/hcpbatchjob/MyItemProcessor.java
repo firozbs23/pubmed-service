@@ -47,7 +47,9 @@ public class MyItemProcessor implements ItemProcessor<JobData, List<PubmedData>>
       pubmedDataList.add(
           PubmedData.builder()
               .jobId(jobData.getJobId())
-              .hcpViqId(pubmed.getHcpViqId())
+              .jobTitle(jobData.getJobTitle())
+              .hcpViqId(jobData.getHcpViqId())
+              .title(pubmed.getTitle())
               .hcpRole(pubmed.getHcpRole())
               .countryIso2(pubmed.getCountryIso2())
               .journal(pubmed.getJournal())
@@ -67,6 +69,11 @@ public class MyItemProcessor implements ItemProcessor<JobData, List<PubmedData>>
               .searchName(pubmed.getSearchName())
               .timestamp(OffsetDateTime.now())
               .url(pubmed.getUrl())
+              .specialtyCode(pubmed.getSpecialtyCode())
+              .createdByJob(pubmed.getCreatedByJob())
+              .createdAt(pubmed.getCreatedAt())
+              .updatedAt(pubmed.getUpdatedAt())
+              .createdByJob(pubmed.getCreatedByJob())
               .build());
     }
     return pubmedDataList;

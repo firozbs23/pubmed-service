@@ -22,6 +22,10 @@ public class PubmedDto {
   @Builder.Default
   private String countryIso2 = "";
 
+  @JsonProperty("job_id")
+  @Builder.Default
+  private String jobId = "";
+
   @JsonProperty("specialty_code")
   @Builder.Default
   private String specialtyCode = "";
@@ -33,6 +37,10 @@ public class PubmedDto {
   @JsonProperty("title")
   @Builder.Default
   private String title = "";
+
+  @JsonProperty("job_title")
+  @Builder.Default
+  private String jobTitle = "";
 
   @JsonProperty("journal")
   @Builder.Default

@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS job_data
     id                   UUID PRIMARY KEY,
     job_id               UUID REFERENCES job_status (job_id) ON DELETE CASCADE,
     hcp_viq_id           VARCHAR(255),
-    title                VARCHAR(255),
+    job_title            VARCHAR(255),
     matching_external_id VARCHAR(255),
     timestamp            TIMESTAMPTZ
 );
@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS job_data
 CREATE TABLE IF NOT EXISTS pubmed_data
 (
     id                   UUID PRIMARY KEY,
-    job_id               UUID,
+    job_id               UUID NOT NULL,
     job_title            VARCHAR(255),
     transaction_viq_id   VARCHAR(255),
     hcp_viq_id           VARCHAR(255),
@@ -215,7 +215,7 @@ CREATE TABLE IF NOT EXISTS pubmed_data
     url                  TEXT,
     gds_tag_viq_id       VARCHAR(255),
     hcp_role_viq_id      VARCHAR(255),
-    key                  BIGINT,
+    key                  VARCHAR(255),
     created_by_job       VARCHAR(255),
     updated_by_job       VARCHAR(255),
     created_at           VARCHAR(255),

@@ -2,11 +2,9 @@ package com.omnizia.pubmedservice.service;
 
 import com.omnizia.pubmedservice.dto.JobStatusDto;
 import com.omnizia.pubmedservice.dto.UudidDto;
-import com.omnizia.pubmedservice.repository.PubmedDataRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -22,9 +20,8 @@ public class PubmedService {
 
   private final UudidService uudidService;
   private final JobLauncherService jobLauncherService;
-  private final PubmedDataRepository pubmedDataRepository;
 
-  public JobStatusDto startPubmedJob(List<String> omniziaIds, String jobTitle) {
+    public JobStatusDto startPubmedJob(List<String> omniziaIds, String jobTitle) {
     UUID uuid = UUID.randomUUID();
     OffsetDateTime dateTime = OffsetDateTime.now();
     List<UudidDto> uudidList = new ArrayList<>();
