@@ -43,14 +43,24 @@ public class PubmedService {
   public JobStatusDto startPubmedJob(List<String> omniziaIds, String jobTitle) {
     UUID uuid = UUID.randomUUID();
     OffsetDateTime dateTime = OffsetDateTime.now();
-    List<UudidDto> uudidList = new ArrayList<>();
 
-    for (String omniziaId : omniziaIds) {
-      List<UudidDto> uudidDtos = uudidService.getUudidsByOmniziaId(omniziaId);
-      uudidList.addAll(uudidDtos);
-    }
+    Thread.ofVirtual()
+        .start(
+            () -> {
+              try {
+                DataSourceContextHolder.setDataSourceType(DbSelectorUtils.OLAM);
+                List<UudidDto> uudidList = new ArrayList<>();
+                for (String omniziaId : omniziaIds) {
+                  List<UudidDto> uudidDtos = uudidService.getUudidsByOmniziaId(omniziaId);
+                  uudidList.addAll(uudidDtos);
+                }
 
-    jobLauncherService.runJob(uuid, uudidList, jobTitle);
+                jobLauncherService.runJob(uuid, uudidList, jobTitle);
+              } finally {
+                DataSourceContextHolder.clearDataSourceType();
+              }
+            });
+
     return JobStatusDto.builder()
         .jobId(uuid)
         .jobStatus(RUNNING)

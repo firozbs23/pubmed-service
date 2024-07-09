@@ -6,6 +6,7 @@ import com.omnizia.pubmedservice.entity.JobData;
 import com.omnizia.pubmedservice.entity.JobStatus;
 import com.omnizia.pubmedservice.entity.PubmedData;
 import com.omnizia.pubmedservice.mapper.PubmedMapper;
+import com.omnizia.pubmedservice.repository.JobDataRepository;
 import com.omnizia.pubmedservice.repository.JobStatusRepository;
 import com.omnizia.pubmedservice.repository.PubmedDataRepository;
 import com.omnizia.pubmedservice.util.JobStatusUtils;
@@ -28,6 +29,7 @@ public class JobDataService {
 
   private final JobStatusRepository jobStatusRepository;
   private final PubmedDataRepository pubmedDataRepository;
+  private final JobDataRepository jobDataRepository;
 
   public JobStatus updateJobStatus(UUID jobId, String newStatus, OffsetDateTime newTimestamp) {
     Optional<JobStatus> existingJobStatusOptional = jobStatusRepository.findById(jobId);
@@ -50,6 +52,7 @@ public class JobDataService {
     jobStatus.setJobId(uuid);
     jobStatus.setJobTitle(jobTitle);
     jobStatus.setJobStatus(JobStatusUtils.RUNNING);
+    jobStatus.setTimestamp(OffsetDateTime.now());
     List<JobData> jobDataList = new ArrayList<>();
 
     for (UudidDto uudidDto : uudidDtos) {

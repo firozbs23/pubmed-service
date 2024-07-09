@@ -45,7 +45,6 @@ public class PubmedController {
     String jobTitle = title.orElse(StringUtils.EMPTY);
 
     try {
-      DataSourceContextHolder.setDataSourceType(DbSelectorUtils.OLAM);
       List<String> omniziaIds = fileProcessingService.processFile(file, fileType, omniziaId);
       log.info("Total omnizia id found : {}", omniziaIds.size());
       JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
@@ -54,8 +53,6 @@ public class PubmedController {
       throw new RuntimeException("Error while processing file", e);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid file type", e);
-    } finally {
-      DataSourceContextHolder.clearDataSourceType();
     }
   }
 

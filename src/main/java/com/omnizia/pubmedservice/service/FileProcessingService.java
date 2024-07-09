@@ -70,8 +70,10 @@ public class FileProcessingService {
   }
 
   private int findColumnIndex(String[] headers, String columnName) {
+    String columnNameWithQuotation = "\"" + columnName + "\"";
     for (int i = 0; i < headers.length; i++) {
-      if (headers[i].trim().equalsIgnoreCase(columnName)) {
+      if (headers[i].trim().equalsIgnoreCase(columnName)
+          || headers[i].trim().equalsIgnoreCase(columnNameWithQuotation)) {
         return i;
       }
     }
