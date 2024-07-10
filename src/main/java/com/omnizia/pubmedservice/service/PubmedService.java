@@ -132,6 +132,7 @@ public class PubmedService {
               .addColumn("timestamp")
               .addColumn("job_id")
               .addColumn("job_title")
+              .addColumn("publication_platform")
               .addColumn("search_name")
               .build()
               .withHeader();
@@ -187,6 +188,7 @@ public class PubmedService {
         "timestamp",
         "job_id",
         "job_title",
+        "publication_platform",
         "search_name"
       };
 
@@ -230,7 +232,8 @@ public class PubmedService {
         row.createCell(28).setCellValue(data.getTimestamp());
         row.createCell(29).setCellValue(data.getJobId());
         row.createCell(30).setCellValue(data.getJobTitle());
-        row.createCell(31).setCellValue(data.getSearchName());
+        row.createCell(31).setCellValue(data.getPublicationPlatform());
+        row.createCell(32).setCellValue(data.getSearchName());
       }
 
       // Write the workbook to a byte array output stream

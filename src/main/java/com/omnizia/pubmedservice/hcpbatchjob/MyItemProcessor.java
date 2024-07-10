@@ -68,6 +68,8 @@ public class MyItemProcessor implements ItemProcessor<JobData, List<PubmedData>>
               .publicationDate(pubmed.getPublicationDate())
               .searchName(pubmed.getSearchName())
               .timestamp(OffsetDateTime.now())
+              .publicationPlatform(pubmed.getPublicationPlatform())
+              .issn(pubmed.getIssn())
               .url(pubmed.getUrl())
               .specialtyCode(pubmed.getSpecialtyCode())
               .createdByJob(pubmed.getCreatedByJob())

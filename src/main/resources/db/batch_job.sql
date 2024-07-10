@@ -229,6 +229,7 @@ CREATE TABLE IF NOT EXISTS pubmed_data
     pmcid                VARCHAR(255),
     doi                  VARCHAR(255),
     mesh_terms           TEXT,
+    publication_platform VARCHAR(255),
     search_name          VARCHAR(255),
     timestamp            TIMESTAMPTZ
 );

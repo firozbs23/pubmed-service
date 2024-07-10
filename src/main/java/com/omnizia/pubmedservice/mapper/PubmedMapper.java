@@ -42,6 +42,7 @@ public class PubmedMapper {
                     .specialtyCode(pubmed.getSpecialtyCode())
                     .transactionViqId(pubmed.getTransactionViqId())
                     .jobId(pubmed.getJobId().toString())
+                    .publicationPlatform(pubmed.getPublicationPlatform())
                     .build())
         .toList();
   }

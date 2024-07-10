@@ -128,6 +128,10 @@ public class PubmedDto {
   @Builder.Default
   private String meshTerms = "";
 
+  @JsonProperty("publication_platform")
+  @Builder.Default
+  private String publicationPlatform = "";
+
   @JsonProperty("search_name")
   @Builder.Default
   private String searchName = "";

@@ -147,6 +147,10 @@ public class PubmedData {
   @Column(name = "mesh_terms")
   private String meshTerms;
 
+  @JsonProperty("publication_platform")
+  @Column(name = "publication_platform")
+  private String publicationPlatform;
+
   @JsonProperty("search_name")
   @Column(name = "search_name")
   private String searchName;
