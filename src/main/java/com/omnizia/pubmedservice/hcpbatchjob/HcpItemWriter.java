@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Scope;
 
 @Slf4j
 @Scope("step")
-public class MyItemWriter implements ItemWriter<List<PubmedData>> {
+public class HcpItemWriter implements ItemWriter<List<PubmedData>> {
   private final JobDataService jobDataService;
 
-  public MyItemWriter(
+  public HcpItemWriter(
       @Value("#{jobParameters['jobId']}") String jobId, JobDataService jobDataService) {
     log.info("Job id inside write: {}", jobId);
     this.jobDataService = jobDataService;

@@ -2,9 +2,9 @@ package com.omnizia.pubmedservice.config;
 
 import com.omnizia.pubmedservice.entity.JobData;
 import com.omnizia.pubmedservice.entity.PubmedData;
-import com.omnizia.pubmedservice.hcpbatchjob.MyItemProcessor;
+import com.omnizia.pubmedservice.hcpbatchjob.HcpItemProcessor;
 import com.omnizia.pubmedservice.hcpbatchjob.HcpItemReader;
-import com.omnizia.pubmedservice.hcpbatchjob.MyItemWriter;
+import com.omnizia.pubmedservice.hcpbatchjob.HcpItemWriter;
 import com.omnizia.pubmedservice.service.JobDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -61,12 +61,12 @@ public class BatchJobConfig {
 
   @Bean
   public ItemProcessor<JobData, List<PubmedData>> processor() {
-    return new MyItemProcessor(restTemplate);
+    return new HcpItemProcessor(restTemplate);
   }
 
   @Bean
   @StepScope
   public ItemWriter<List<PubmedData>> writer(@Value("#{jobParameters['job_id']}") String jobId) {
-    return new MyItemWriter(jobId, jobDataService);
+    return new HcpItemWriter(jobId, jobDataService);
   }
 }

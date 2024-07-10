@@ -14,11 +14,11 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 @Slf4j
-public class MyItemProcessor implements ItemProcessor<JobData, List<PubmedData>> {
+public class HcpItemProcessor implements ItemProcessor<JobData, List<PubmedData>> {
   private static final String BIO_PYTHON_API_URL = "http://localhost:5000/pubmed";
   private final RestTemplate restTemplate;
 
-  public MyItemProcessor(RestTemplate restTemplate) {
+  public HcpItemProcessor(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
   }
 
