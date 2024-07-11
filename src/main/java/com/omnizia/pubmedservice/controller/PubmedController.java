@@ -34,7 +34,7 @@ public class PubmedController {
   private final JobDataService jobDataService;
 
   @PostMapping
-  public ResponseEntity<JobStatusDto> uploadFile(
+  public ResponseEntity<JobStatusDto> startPubmedBatchJob(
       @RequestParam("file") MultipartFile file,
       @RequestParam("file_type") Optional<String> type,
       @RequestParam("id_column_name") Optional<String> idColumnName,
@@ -48,6 +48,29 @@ public class PubmedController {
       List<String> omniziaIds = fileProcessingService.processFile(file, fileType, omniziaId);
       log.info("Total omnizia id found : {}", omniziaIds.size());
       JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
+      return ResponseEntity.ok(jobStatus);
+    } catch (IOException e) {
+      throw new RuntimeException("Error while processing file", e);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid file type", e);
+    }
+  }
+
+  @PostMapping("/pmid")
+  public ResponseEntity<JobStatusDto> getPubmedDataByPmid(
+      @RequestParam("file") MultipartFile file,
+      @RequestParam("file_type") Optional<String> type,
+      @RequestParam("id_column_name") Optional<String> idColumnName,
+      @RequestParam("job_title") Optional<String> title) {
+
+    String omniziaId = idColumnName.orElse("publication_id");
+    String fileType = type.orElse(FileTypeUtils.CSV);
+    String jobTitle = title.orElse(StringUtils.EMPTY);
+
+    try {
+      List<String> publicationIds = fileProcessingService.processFile(file, fileType, omniziaId);
+      log.info("Total publication_id found : {}", publicationIds.size());
+      JobStatusDto jobStatus = pubmedService.findPubmedDataByPmid(publicationIds, jobTitle);
       return ResponseEntity.ok(jobStatus);
     } catch (IOException e) {
       throw new RuntimeException("Error while processing file", e);
@@ -92,13 +115,9 @@ public class PubmedController {
 
   @GetMapping("/file")
   public ResponseEntity<byte[]> getPubmedDataInFile(
-      @RequestParam("job_id") UUID jobId,
-      @RequestParam("file_type") Optional<String> type,
-      @RequestParam("job_title") Optional<String> title)
+      @RequestParam("job_id") UUID jobId, @RequestParam("file_type") Optional<String> type)
       throws IOException {
-
     String fileType = type.orElse(FileTypeUtils.CSV);
-    String jobTitle = title.orElse(StringUtils.EMPTY);
 
     byte[] fileInBytes;
     String fileFormat;
@@ -118,6 +137,7 @@ public class PubmedController {
 
     JobStatusDto jobStatusDto = pubmedService.getJobStatusByJobId(jobId);
     String fileName = jobStatusDto.getJobTitle();
+
     if (fileName != null && !fileName.trim().isEmpty())
       fileName = fileName.replace(" ", "-") + fileFormat;
     else fileName = "data" + fileFormat;

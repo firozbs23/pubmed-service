@@ -2,6 +2,7 @@ package com.omnizia.pubmedservice.mapper;
 
 import com.omnizia.pubmedservice.dto.PubmedDto;
 import com.omnizia.pubmedservice.entity.PubmedData;
+import com.omnizia.pubmedservice.util.StringUtils;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class PubmedMapper {
                     .publicationId(pubmed.getPublicationId())
                     .publicationType(pubmed.getPublicationType())
                     .searchName(pubmed.getSearchName())
-                    .timestamp(pubmed.getTimestamp().toString())
+                    .timestamp(StringUtils.getStringOrEmpty(pubmed.getTimestamp()))
                     .title(pubmed.getTitle())
                     .jobTitle(pubmed.getJobTitle())
                     .createdByJob(pubmed.getCreatedByJob())

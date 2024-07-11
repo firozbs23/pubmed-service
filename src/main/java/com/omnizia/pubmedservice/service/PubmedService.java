@@ -8,7 +8,11 @@ import com.omnizia.pubmedservice.dto.JobStatusDto;
 import com.omnizia.pubmedservice.dto.PubmedDto;
 import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.entity.JobStatus;
+import com.omnizia.pubmedservice.entity.PubmedData;
+import com.omnizia.pubmedservice.mapper.JobStatusMapper;
+import com.omnizia.pubmedservice.repository.JobDataRepository;
 import com.omnizia.pubmedservice.repository.JobStatusRepository;
+import com.omnizia.pubmedservice.repository.PubmedDataRepository;
 import com.omnizia.pubmedservice.util.DbSelectorUtils;
 import com.omnizia.pubmedservice.util.JobStatusUtils;
 import lombok.RequiredArgsConstructor;
@@ -18,15 +22,16 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.omnizia.pubmedservice.util.JobStatusUtils.RUNNING;
 
@@ -35,10 +40,15 @@ import static com.omnizia.pubmedservice.util.JobStatusUtils.RUNNING;
 @RequiredArgsConstructor
 public class PubmedService {
 
+  private static final String BIO_PYTHON_API_URL = "http://localhost:5000/pubmed/pmid";
+
+  private final RestTemplate restTemplate;
   private final UudidService uudidService;
   private final JobLauncherService jobLauncherService;
   private final JobStatusRepository jobStatusRepository;
   private final JobDataService jobDataService;
+  private final PubmedDataRepository pubmedDataRepository;
+  private final JobDataRepository jobDataRepository;
 
   public JobStatusDto startPubmedJob(List<String> omniziaIds, String jobTitle) {
     UUID uuid = UUID.randomUUID();
@@ -75,13 +85,13 @@ public class PubmedService {
         .map(
             job ->
                 JobStatusDto.builder()
-                    .jobId(jobId)
+                    .jobId(job.getJobId())
                     .jobStatus(job.getJobStatus())
                     .jobTitle(job.getJobTitle())
+                    .timestamp(job.getTimestamp())
                     .build())
         .orElse(
             JobStatusDto.builder()
-                .jobId(jobId)
                 .jobStatus(JobStatusUtils.UNKNOWN)
                 .jobTitle(JobStatusUtils.UNKNOWN)
                 .build());
@@ -244,5 +254,57 @@ public class PubmedService {
     } finally {
       DataSourceContextHolder.clearDataSourceType();
     }
+  }
+
+  public JobStatusDto findPubmedDataByPmid(List<String> publicationIds, String jobTitle) {
+    UUID uuid = UUID.randomUUID();
+    OffsetDateTime dateTime = OffsetDateTime.now();
+    JobStatusDto jobStatusDto =
+        JobStatusDto.builder()
+            .jobId(uuid)
+            .jobStatus(RUNNING)
+            .jobTitle(jobTitle)
+            .timestamp(dateTime)
+            .build();
+
+    startFindingPubmedData(publicationIds, jobTitle, jobStatusDto);
+    return jobStatusDto;
+  }
+
+  private void startFindingPubmedData(
+      List<String> publicationIds, String jobTitle, JobStatusDto jobStatusDto) {
+    Thread.ofVirtual()
+        .start(
+            () -> {
+              try {
+                DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
+                JobStatus jobStatus = JobStatusMapper.mapToJobStatus(jobStatusDto);
+                jobStatusRepository.save(jobStatus);
+                for (String pmid : publicationIds) {
+                  String url = BIO_PYTHON_API_URL + "?pmid={pmid}";
+                  try {
+                    ResponseEntity<PubmedData> responseEntity =
+                        restTemplate.exchange(
+                            url,
+                            HttpMethod.GET,
+                            null,
+                            new ParameterizedTypeReference<>() {},
+                            Map.of("pmid", pmid));
+
+                    PubmedData pubmedData = Objects.requireNonNull(responseEntity.getBody());
+                    pubmedData.setJobId(jobStatusDto.getJobId());
+                    pubmedData.setJobTitle(jobTitle);
+                    pubmedData.setTimestamp(OffsetDateTime.now());
+                    pubmedDataRepository.save(pubmedData);
+                    log.info("Pubmed data saved for PMID: {}", pmid);
+                  } catch (Exception e) {
+                    log.error("Not able to save pubmed for pmid : {}", pmid, e);
+                  }
+                }
+                log.info("Finished pubmed data saving for JobId: {}", jobStatusDto.getJobId());
+              } finally {
+                DataSourceContextHolder.clearDataSourceType();
+              }
+            });
   }
 }
