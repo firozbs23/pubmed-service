@@ -10,7 +10,6 @@ import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.entity.JobStatus;
 import com.omnizia.pubmedservice.entity.PubmedData;
 import com.omnizia.pubmedservice.mapper.JobStatusMapper;
-import com.omnizia.pubmedservice.repository.JobDataRepository;
 import com.omnizia.pubmedservice.repository.JobStatusRepository;
 import com.omnizia.pubmedservice.repository.PubmedDataRepository;
 import com.omnizia.pubmedservice.util.DbSelectorUtils;
@@ -48,9 +47,8 @@ public class PubmedService {
   private final JobStatusRepository jobStatusRepository;
   private final JobDataService jobDataService;
   private final PubmedDataRepository pubmedDataRepository;
-  private final JobDataRepository jobDataRepository;
 
-  public JobStatusDto startPubmedJob(List<String> omniziaIds, String jobTitle) {
+    public JobStatusDto startPubmedJob(List<String> omniziaIds, String jobTitle) {
     UUID uuid = UUID.randomUUID();
     OffsetDateTime dateTime = OffsetDateTime.now();
 
