@@ -1,5 +1,6 @@
 package com.omnizia.pubmedservice.config;
 
+import com.omnizia.pubmedservice.component.JobCompletionNotificationListener;
 import com.omnizia.pubmedservice.entity.JobData;
 import com.omnizia.pubmedservice.entity.PubmedData;
 import com.omnizia.pubmedservice.hcpbatchjob.HcpItemProcessor;
@@ -34,10 +35,14 @@ public class BatchJobConfig {
   private final PlatformTransactionManager platformTransactionManager;
   private final JobDataService jobDataService;
   private final RestTemplate restTemplate;
+  private final JobCompletionNotificationListener jobCompletionNotificationListener;
 
   @Bean
   public Job processJob(Step step) {
-    return new JobBuilder("processJob", jobRepository).start(step).build();
+    return new JobBuilder("processJob", jobRepository)
+        .start(step)
+        .listener(jobCompletionNotificationListener)
+        .build();
   }
 
   @Bean

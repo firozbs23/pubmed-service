@@ -1,7 +1,6 @@
 package com.omnizia.pubmedservice.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class PubmedDto {
+public class PubmedDataDto {
   @JsonProperty("transaction_viq_id")
   @Builder.Default
   private String transactionViqId = "";

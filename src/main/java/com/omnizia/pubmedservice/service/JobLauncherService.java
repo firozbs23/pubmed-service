@@ -3,6 +3,7 @@ package com.omnizia.pubmedservice.service;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.util.DbSelectorUtils;
+import com.omnizia.pubmedservice.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -26,7 +27,7 @@ public class JobLauncherService {
   private final JobDataService jobDataService;
   private final Job job;
 
-  public void runJob(UUID uuid, List<UudidDto> uudidDtos, String jobTitle) {
+    public void runJob(UUID uuid, List<UudidDto> uudidDtos, String jobTitle) {
     Thread.ofVirtual()
         .start(
             () -> {
@@ -35,12 +36,12 @@ public class JobLauncherService {
                 String selectedDb = DataSourceContextHolder.getDataSourceType();
                 log.info("Running job with job_id: {} in DB: {}", uuid, selectedDb);
 
-                jobDataService.saveJobData(uuid, uudidDtos, jobTitle);
+                jobDataService.savePubmedJobStatus(uuid, uudidDtos, jobTitle);
 
                 JobParameters jobParameters =
                     new JobParametersBuilder()
                         .addDate(START_AT, new Date())
-                        .addString(JOB_ID, uuid.toString())
+                        .addString(JOB_ID, StringUtils.getStringOrEmpty(uuid))
                         .addString(JOB_TITLE, jobTitle)
                         .toJobParameters();
                 jobLauncher.run(job, jobParameters);

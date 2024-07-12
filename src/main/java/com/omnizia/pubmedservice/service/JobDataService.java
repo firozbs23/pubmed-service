@@ -1,16 +1,16 @@
 package com.omnizia.pubmedservice.service;
 
-import com.omnizia.pubmedservice.dto.PubmedDto;
+import com.omnizia.pubmedservice.dto.JobStatusDto;
+import com.omnizia.pubmedservice.dto.PubmedDataDto;
 import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.entity.JobData;
 import com.omnizia.pubmedservice.entity.JobStatus;
 import com.omnizia.pubmedservice.entity.PubmedData;
+import com.omnizia.pubmedservice.exception.CustomException;
 import com.omnizia.pubmedservice.mapper.PubmedMapper;
-import com.omnizia.pubmedservice.repository.JobDataRepository;
 import com.omnizia.pubmedservice.repository.JobStatusRepository;
 import com.omnizia.pubmedservice.repository.PubmedDataRepository;
 import com.omnizia.pubmedservice.util.JobStatusUtils;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,25 +29,9 @@ public class JobDataService {
 
   private final JobStatusRepository jobStatusRepository;
   private final PubmedDataRepository pubmedDataRepository;
-  private final JobDataRepository jobDataRepository;
-
-  public JobStatus updateJobStatus(UUID jobId, String newStatus, OffsetDateTime newTimestamp) {
-    Optional<JobStatus> existingJobStatusOptional = jobStatusRepository.findById(jobId);
-    if (existingJobStatusOptional.isPresent()) {
-      JobStatus existingJobStatus = existingJobStatusOptional.get();
-
-      // Update fields except for job_id and job_title
-      existingJobStatus.setJobStatus(newStatus);
-      existingJobStatus.setTimestamp(newTimestamp);
-
-      return jobStatusRepository.save(existingJobStatus);
-    } else {
-      throw new EntityNotFoundException("JobStatus with id " + jobId + " not found");
-    }
-  }
 
   @Transactional
-  public void saveJobData(UUID uuid, List<UudidDto> uudidDtos, String jobTitle) {
+  public void savePubmedJobStatus(UUID uuid, List<UudidDto> uudidDtos, String jobTitle) {
     JobStatus jobStatus = new JobStatus();
     jobStatus.setJobId(uuid);
     jobStatus.setJobTitle(jobTitle);
@@ -69,7 +53,7 @@ public class JobDataService {
     jobStatusRepository.save(jobStatus);
   }
 
-  public List<JobData> getAllJobDataByJobId(UUID uuid) {
+  public List<JobData> getPubmedJobDataList(UUID uuid) {
     Optional<JobStatus> jobStatus = jobStatusRepository.findById(uuid);
     if (jobStatus.isPresent()) return jobStatus.get().getJobDataList();
     return List.of();
@@ -79,8 +63,30 @@ public class JobDataService {
     pubmedDataRepository.saveAll(jobDataList);
   }
 
-  public List<PubmedDto> getPubmedDataByJobId(UUID jobId) {
+  public List<PubmedDataDto> getPubmedDataByJobId(UUID jobId) {
     List<PubmedData> pubmedData = pubmedDataRepository.findByJobId(jobId);
     return PubmedMapper.mapToPubmedDto(pubmedData);
+  }
+
+  public JobStatusDto getPubmedJobStatus(UUID jobId) {
+    JobStatus jobStatus = jobStatusRepository.findById(jobId).orElse(null);
+    if (jobStatus == null) throw new CustomException("Not Found", "Not able to find job status");
+    return JobStatusDto.builder()
+        .jobId(jobStatus.getJobId())
+        .jobStatus(jobStatus.getJobStatus())
+        .jobTitle(jobStatus.getJobTitle())
+        .timestamp(jobStatus.getTimestamp())
+        .build();
+  }
+
+  public void updateJobStatus(JobStatusDto newJobStatus) {
+    JobStatus updatedJobStatus =
+        JobStatus.builder()
+            .jobId(newJobStatus.getJobId())
+            .jobStatus(newJobStatus.getJobStatus())
+            .jobTitle(newJobStatus.getJobTitle())
+            .timestamp(newJobStatus.getTimestamp())
+            .build();
+    jobStatusRepository.save(updatedJobStatus);
   }
 }

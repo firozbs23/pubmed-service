@@ -2,11 +2,9 @@ package com.omnizia.pubmedservice.controller;
 
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.JobStatusDto;
-import com.omnizia.pubmedservice.dto.PubmedDto;
+import com.omnizia.pubmedservice.dto.PubmedDataDto;
 import com.omnizia.pubmedservice.exception.CustomException;
-import com.omnizia.pubmedservice.service.FileProcessingService;
-import com.omnizia.pubmedservice.service.JobDataService;
-import com.omnizia.pubmedservice.service.PubmedService;
+import com.omnizia.pubmedservice.service.*;
 import com.omnizia.pubmedservice.util.DbSelectorUtils;
 import com.omnizia.pubmedservice.util.FileTypeUtils;
 import com.omnizia.pubmedservice.util.StringUtils;
@@ -30,11 +28,12 @@ import java.util.UUID;
 public class PubmedController {
 
   private final FileProcessingService fileProcessingService;
+  private final FileGenerationService fileGenerationService;
   private final PubmedService pubmedService;
   private final JobDataService jobDataService;
 
   @PostMapping
-  public ResponseEntity<JobStatusDto> startPubmedBatchJob(
+  public ResponseEntity<JobStatusDto> getPubmedDataInBatchJob(
       @RequestParam("file") MultipartFile file,
       @RequestParam("file_type") Optional<String> type,
       @RequestParam("id_column_name") Optional<String> idColumnName,
@@ -95,18 +94,10 @@ public class PubmedController {
   }
 
   @GetMapping
-  public ResponseEntity<List<PubmedDto>> getPubmedByJobId(
-      @RequestParam("job_id") UUID jobId,
-      @RequestParam("file_type") Optional<String> type,
-      @RequestParam("job_title") Optional<String> title) {
-
-    String fileType = type.orElse(FileTypeUtils.CSV);
-    String jobTitle = title.orElse(StringUtils.EMPTY);
-
+  public ResponseEntity<List<PubmedDataDto>> getPubmedDataByJobId(@RequestParam("job_id") UUID jobId) {
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
-      List<PubmedDto> pubmedData = jobDataService.getPubmedDataByJobId(jobId);
-      log.info("Current thread: {}", Thread.currentThread());
+      List<PubmedDataDto> pubmedData = jobDataService.getPubmedDataByJobId(jobId);
       return ResponseEntity.ok(pubmedData);
     } finally {
       DataSourceContextHolder.clearDataSourceType();
@@ -117,33 +108,50 @@ public class PubmedController {
   public ResponseEntity<byte[]> getPubmedDataInFile(
       @RequestParam("job_id") UUID jobId, @RequestParam("file_type") Optional<String> type)
       throws IOException {
-    String fileType = type.orElse(FileTypeUtils.CSV);
+    try {
+      DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
+      String fileType = type.orElse(FileTypeUtils.CSV);
 
-    byte[] fileInBytes;
-    String fileFormat;
-    HttpHeaders headers = new HttpHeaders();
+      byte[] fileInBytes;
+      String fileFormat;
+      HttpHeaders headers = new HttpHeaders();
 
-    if (fileType.equalsIgnoreCase("csv")) {
-      fileInBytes = pubmedService.getPubmedDataInCSV(jobId);
-      fileFormat = ".csv";
-      headers.setContentType(MediaType.parseMediaType("text/csv"));
-    } else if (fileType.equalsIgnoreCase("xlsx")) {
-      fileInBytes = pubmedService.getPubmedDataInXLSX(jobId);
-      fileFormat = ".xlsx";
-      headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-    } else
-      throw new CustomException(
-          "Wrong File Type", "Please provide file_type. File type must be either csv or xlsx.");
+      if (fileType.equalsIgnoreCase("csv")) {
+        fileInBytes = fileGenerationService.getPubmedDataInCSV(jobId);
+        fileFormat = ".csv";
+        headers.setContentType(MediaType.parseMediaType("text/csv"));
+      } else if (fileType.equalsIgnoreCase("xlsx")) {
+        fileInBytes = fileGenerationService.getPubmedDataInXLSX(jobId);
+        fileFormat = ".xlsx";
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+      } else
+        throw new CustomException(
+            "Wrong File Type", "Please provide file_type. File type must be either csv or xlsx.");
 
-    JobStatusDto jobStatusDto = pubmedService.getJobStatusByJobId(jobId);
-    String fileName = jobStatusDto.getJobTitle();
+      JobStatusDto jobStatusDto = pubmedService.getPubmedJobStatus(jobId);
+      String fileName = jobStatusDto.getJobTitle();
 
-    if (fileName != null && !fileName.trim().isEmpty())
-      fileName = fileName.replace(" ", "-") + fileFormat;
-    else fileName = "data" + fileFormat;
+      if (fileName != null && !fileName.trim().isEmpty())
+        fileName = fileName.replace(" ", "-") + fileFormat;
+      else fileName = "data" + fileFormat;
 
-    headers.setContentDispositionFormData("attachment", fileName);
-    headers.setContentLength(fileInBytes.length);
-    return ResponseEntity.ok().headers(headers).body(fileInBytes);
+      headers.setContentDispositionFormData("attachment", fileName);
+      headers.setContentLength(fileInBytes.length);
+      return ResponseEntity.ok().headers(headers).body(fileInBytes);
+    } finally {
+      DataSourceContextHolder.clearDataSourceType();
+    }
+  }
+
+  @GetMapping("/job-status")
+  public ResponseEntity<JobStatusDto> getPubmedJobStatus(@RequestParam("job_id") UUID jobId) {
+    try {
+      DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
+      log.info("Api call to get job status : {}", jobId);
+      JobStatusDto jobStatusDto = pubmedService.getPubmedJobStatus(jobId);
+      return ResponseEntity.ok(jobStatusDto);
+    } finally {
+      DataSourceContextHolder.clearDataSourceType();
+    }
   }
 }

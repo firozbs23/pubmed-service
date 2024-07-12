@@ -1,17 +1,17 @@
 package com.omnizia.pubmedservice.mapper;
 
-import com.omnizia.pubmedservice.dto.PubmedDto;
+import com.omnizia.pubmedservice.dto.PubmedDataDto;
 import com.omnizia.pubmedservice.entity.PubmedData;
 import com.omnizia.pubmedservice.util.StringUtils;
 
 import java.util.List;
 
 public class PubmedMapper {
-  public static List<PubmedDto> mapToPubmedDto(List<PubmedData> pubmedData) {
+  public static List<PubmedDataDto> mapToPubmedDto(List<PubmedData> pubmedData) {
     return pubmedData.stream()
         .map(
             pubmed ->
-                PubmedDto.builder()
+                PubmedDataDto.builder()
                     .doi(pubmed.getDoi())
                     .affiliations(pubmed.getAffiliations())
                     .firstName(pubmed.getFirstName())

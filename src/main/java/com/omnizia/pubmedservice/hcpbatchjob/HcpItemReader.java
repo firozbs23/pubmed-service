@@ -17,7 +17,7 @@ public class HcpItemReader implements ItemReader<JobData> {
 
   public HcpItemReader(String jobId, JobDataService jobDataService) {
     log.info("Creating HCP item reader for jobId: {}", jobId);
-    jobDataList = jobDataService.getAllJobDataByJobId(UUID.fromString(jobId));
+    jobDataList = jobDataService.getPubmedJobDataList(UUID.fromString(jobId));
   }
 
   @Override
