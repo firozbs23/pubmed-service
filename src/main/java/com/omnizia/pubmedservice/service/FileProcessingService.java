@@ -25,7 +25,7 @@ public class FileProcessingService {
   }
 
   private List<String> processCsvFile(MultipartFile file, String columnName) throws IOException {
-    List<String> omniziaIds = new ArrayList<>();
+    List<String> ids = new ArrayList<>();
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
       String headerLine = reader.readLine();
       if (headerLine == null) {
@@ -34,18 +34,19 @@ public class FileProcessingService {
 
       // Find the index of the omnizia_id column
       String[] headers = headerLine.split(",");
-      int omniziaIdIndex = findColumnIndex(headers, columnName);
+      int idIndex = findColumnIndex(headers, columnName);
 
       // Process CSV content
       String line;
       while ((line = reader.readLine()) != null) {
         String[] values = line.split(",");
-        if (values.length > omniziaIdIndex) {
-          omniziaIds.add(values[omniziaIdIndex]);
+        if (values.length > idIndex) {
+          // ids.add(values[idIndex]);
+          ids.add(values[idIndex].replaceAll("^\"|\"$", "")); // Remove surrounding quotes if any
         }
       }
     }
-    return omniziaIds;
+    return ids;
   }
 
   private List<String> processExcelFile(MultipartFile file, String columnName) throws IOException {
