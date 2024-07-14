@@ -7,6 +7,7 @@ import com.omnizia.pubmedservice.hcpbatchjob.HcpItemProcessor;
 import com.omnizia.pubmedservice.hcpbatchjob.HcpItemReader;
 import com.omnizia.pubmedservice.hcpbatchjob.HcpItemWriter;
 import com.omnizia.pubmedservice.service.JobDataService;
+import com.omnizia.pubmedservice.service.PubmedRestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -34,7 +35,7 @@ public class BatchJobConfig {
   private final JobRepository jobRepository;
   private final PlatformTransactionManager platformTransactionManager;
   private final JobDataService jobDataService;
-  private final RestTemplate restTemplate;
+  private final PubmedRestService restService;
   private final JobCompletionNotificationListener jobCompletionNotificationListener;
 
   @Bean
@@ -66,7 +67,7 @@ public class BatchJobConfig {
 
   @Bean
   public ItemProcessor<JobData, List<PubmedData>> processor() {
-    return new HcpItemProcessor(restTemplate);
+    return new HcpItemProcessor(restService);
   }
 
   @Bean

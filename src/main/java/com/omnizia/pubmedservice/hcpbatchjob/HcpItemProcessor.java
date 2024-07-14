@@ -2,24 +2,21 @@ package com.omnizia.pubmedservice.hcpbatchjob;
 
 import com.omnizia.pubmedservice.entity.JobData;
 import com.omnizia.pubmedservice.entity.PubmedData;
+import com.omnizia.pubmedservice.service.PubmedRestService;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.OffsetDateTime;
 import java.util.*;
 
 @Slf4j
 public class HcpItemProcessor implements ItemProcessor<JobData, List<PubmedData>> {
-  private static final String BIO_PYTHON_API_URL = "http://localhost:5000/pubmed";
-  private final RestTemplate restTemplate;
 
-  public HcpItemProcessor(RestTemplate restTemplate) {
-    this.restTemplate = restTemplate;
+  private final PubmedRestService restService;
+
+  public HcpItemProcessor(PubmedRestService restService) {
+    this.restService = restService;
   }
 
   @Override
@@ -32,16 +29,7 @@ public class HcpItemProcessor implements ItemProcessor<JobData, List<PubmedData>
   }
 
   private List<PubmedData> processJobData(JobData jobData) {
-    String url = BIO_PYTHON_API_URL + "?name={name}";
-    ResponseEntity<PubmedData[]> responseEntity =
-        restTemplate.exchange(
-            url,
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<>() {},
-            Map.of("name", jobData.getMatchingExternalId()));
-
-    PubmedData[] pubmedData = Objects.requireNonNull(responseEntity.getBody());
+    PubmedData[] pubmedData = restService.getPubmedDataList(jobData);
     List<PubmedData> pubmedDataList = new ArrayList<>();
     for (PubmedData pubmed : pubmedData) {
       pubmedDataList.add(

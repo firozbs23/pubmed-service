@@ -44,32 +44,10 @@ public class PubmedController {
     String jobTitle = title.orElse(StringUtils.EMPTY);
 
     try {
-      List<String> omniziaIds = fileProcessingService.processFile(file, fileType, omniziaId);
+      List<String> omniziaIds =
+          fileProcessingService.processFile(file, fileType.trim(), omniziaId.trim());
       log.info("Total omnizia id found : {}", omniziaIds.size());
-      JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
-      return ResponseEntity.ok(jobStatus);
-    } catch (IOException e) {
-      throw new RuntimeException("Error while processing file", e);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid file type", e);
-    }
-  }
-
-  @PostMapping("/pmid")
-  public ResponseEntity<JobStatusDto> getPubmedDataByPmid(
-      @RequestParam("file") MultipartFile file,
-      @RequestParam("file_type") Optional<String> type,
-      @RequestParam("id_column_name") Optional<String> idColumnName,
-      @RequestParam("job_title") Optional<String> title) {
-
-    String omniziaId = idColumnName.orElse("publication_id");
-    String fileType = type.orElse(FileTypeUtils.CSV);
-    String jobTitle = title.orElse(StringUtils.EMPTY);
-
-    try {
-      List<String> publicationIds = fileProcessingService.processFile(file, fileType, omniziaId);
-      log.info("Total publication_id found : {}", publicationIds.size());
-      JobStatusDto jobStatus = pubmedService.findPubmedDataByPmid(publicationIds, jobTitle);
+      JobStatusDto jobStatus = pubmedService.startPubmedBatchJob(omniziaIds, jobTitle.trim());
       return ResponseEntity.ok(jobStatus);
     } catch (IOException e) {
       throw new RuntimeException("Error while processing file", e);
@@ -86,15 +64,53 @@ public class PubmedController {
       DataSourceContextHolder.setDataSourceType(DbSelectorUtils.OLAM);
       List<String> omniziaIds = List.of(omniziaId);
       String jobTitle = title.orElse(StringUtils.EMPTY);
-      JobStatusDto jobStatus = pubmedService.startPubmedJob(omniziaIds, jobTitle);
+      JobStatusDto jobStatus = pubmedService.startPubmedBatchJob(omniziaIds, jobTitle);
       return ResponseEntity.ok(jobStatus);
     } finally {
       DataSourceContextHolder.clearDataSourceType();
     }
   }
 
+  @PostMapping("/pmid")
+  public ResponseEntity<JobStatusDto> getPubmedDataByPmid(
+      @RequestParam("file") MultipartFile file,
+      @RequestParam("file_type") Optional<String> type,
+      @RequestParam("id_column_name") Optional<String> idColumnName,
+      @RequestParam("job_title") Optional<String> title) {
+
+    String omniziaId = idColumnName.orElse("publication_id");
+    String fileType = type.orElse(FileTypeUtils.CSV);
+    String jobTitle = title.orElse(StringUtils.EMPTY);
+
+    try {
+      List<String> publicationIds =
+          fileProcessingService.processFile(file, fileType.trim(), omniziaId.trim());
+      log.info("Total publication_id found : {}", publicationIds.size());
+      JobStatusDto jobStatus = pubmedService.findPubmedDataByPmid(publicationIds, jobTitle.trim());
+      return ResponseEntity.ok(jobStatus);
+    } catch (IOException e) {
+      throw new RuntimeException("Error while processing file", e);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid file type", e);
+    }
+  }
+
+  @PostMapping("/pmid/{pmid}")
+  public ResponseEntity<JobStatusDto> getPubmedDataByPmid(
+      @PathVariable("pmid") String pmid, @RequestParam("job_title") Optional<String> title) {
+    try {
+      List<String> pubmedIds = List.of(pmid);
+      String jobTitle = title.orElse(StringUtils.EMPTY);
+      JobStatusDto jobStatus = pubmedService.findPubmedDataByPmid(pubmedIds, jobTitle.trim());
+      return ResponseEntity.ok(jobStatus);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid file type", e);
+    }
+  }
+
   @GetMapping
-  public ResponseEntity<List<PubmedDataDto>> getPubmedDataByJobId(@RequestParam("job_id") UUID jobId) {
+  public ResponseEntity<List<PubmedDataDto>> getPubmedDataByJobId(
+      @RequestParam("job_id") UUID jobId) {
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
       List<PubmedDataDto> pubmedData = jobDataService.getPubmedDataByJobId(jobId);
@@ -128,7 +144,7 @@ public class PubmedController {
         throw new CustomException(
             "Wrong File Type", "Please provide file_type. File type must be either csv or xlsx.");
 
-      JobStatusDto jobStatusDto = pubmedService.getPubmedJobStatus(jobId);
+      JobStatusDto jobStatusDto = jobDataService.getPubmedJobStatus(jobId);
       String fileName = jobStatusDto.getJobTitle();
 
       if (fileName != null && !fileName.trim().isEmpty())
@@ -148,7 +164,7 @@ public class PubmedController {
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
       log.info("Api call to get job status : {}", jobId);
-      JobStatusDto jobStatusDto = pubmedService.getPubmedJobStatus(jobId);
+      JobStatusDto jobStatusDto = jobDataService.getPubmedJobStatus(jobId);
       return ResponseEntity.ok(jobStatusDto);
     } finally {
       DataSourceContextHolder.clearDataSourceType();

@@ -12,4 +12,13 @@ public class JobStatusMapper {
         .timestamp(jobStatusDto.getTimestamp())
         .build();
   }
+
+  public static JobStatusDto mapToJobStatusDto(JobStatus jobStatus) {
+    return JobStatusDto.builder()
+        .jobId(jobStatus.getJobId())
+        .jobTitle(jobStatus.getJobTitle())
+        .jobStatus(jobStatus.getJobStatus())
+        .timestamp(jobStatus.getTimestamp())
+        .build();
+  }
 }
