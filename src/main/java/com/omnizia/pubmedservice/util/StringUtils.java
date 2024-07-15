@@ -22,11 +22,15 @@ public class StringUtils {
   }
 
   public static String getStringOrEmpty(Object object) {
-    if (object == null) return EMPTY;
-    return object.toString().trim();
+    return getStringOrDefault(object,EMPTY);
   }
 
   public static String removeExtraWhitespace(String input) {
     return input.replaceAll("\\s+", " ");
+  }
+
+  public static String getStringOrDefault(Object object, String defaultValue) {
+    if (object == null) return defaultValue;
+    return object.toString().trim();
   }
 }

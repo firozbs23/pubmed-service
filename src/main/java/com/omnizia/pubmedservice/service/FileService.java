@@ -5,31 +5,122 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.PubmedDataDto;
-import com.omnizia.pubmedservice.util.DbSelectorUtils;
+import com.omnizia.pubmedservice.constant.DbSelectorConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static com.omnizia.pubmedservice.constant.FileConstants.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FileGenerationService {
+public class FileService {
 
-  private final JobDataService1 jobDataService;
+  private final PubmedDataService pubmedDataService;
+
+  public List<String> processFile(MultipartFile file, String fileType, String columnName)
+      throws IOException {
+    fileType = fileType == null ? FILE_TYPE_CSV : fileType.trim().toLowerCase();
+    columnName = columnName.trim();
+
+    return switch (fileType) {
+      case FILE_TYPE_CSV -> processCsvFile(file, columnName);
+      case FILE_TYPE_XLSX -> processExcelFile(file, columnName);
+      default -> throw new IllegalArgumentException("Unsupported file type: " + fileType);
+    };
+  }
+
+  private List<String> processCsvFile(MultipartFile file, String columnName) throws IOException {
+    List<String> idList = new ArrayList<>();
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+      String headerLine = reader.readLine();
+      if (headerLine == null) {
+        throw new IOException("CSV file is empty");
+      }
+
+      // Find the index of the omnizia_id column
+      String[] headers = headerLine.split(",");
+      int idIndex = findColumnIndex(headers, columnName);
+
+      // Process CSV content
+      String line;
+      while ((line = reader.readLine()) != null) {
+        String[] values = line.split(",");
+        if (values.length > idIndex) {
+          // ids.add(values[idIndex]);
+          idList.add(values[idIndex].replaceAll("^\"|\"$", "")); // Remove surrounding quotes if any
+        }
+      }
+    }
+    return idList;
+  }
+
+  private List<String> processExcelFile(MultipartFile file, String columnName) throws IOException {
+    List<String> idList = new ArrayList<>();
+    try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+      Sheet sheet = workbook.getSheetAt(0);
+      if (sheet.getPhysicalNumberOfRows() > 0) {
+        Row headerRow = sheet.getRow(0);
+        int omniziaIdIndex = findColumnIndex(headerRow, columnName);
+
+        // Process Excel content
+        for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
+          Row row = sheet.getRow(i);
+          Cell cell = row.getCell(omniziaIdIndex);
+          if (cell != null) {
+            idList.add(getCellValueAsString(cell));
+          }
+        }
+      }
+    }
+    return idList;
+  }
+
+  private int findColumnIndex(String[] headers, String columnName) {
+    String columnNameWithQuotation = "\"" + columnName + "\"";
+    for (int i = 0; i < headers.length; i++) {
+      if (headers[i].trim().equals(columnName)
+          || headers[i].trim().equals(columnNameWithQuotation)) {
+        return i;
+      }
+    }
+    throw new IllegalArgumentException("Column " + columnName + " not found");
+  }
+
+  private int findColumnIndex(Row headerRow, String columnName) {
+    for (int i = 0; i < headerRow.getPhysicalNumberOfCells(); i++) {
+      Cell cell = headerRow.getCell(i);
+      if (cell.getStringCellValue().trim().equals(columnName)) {
+        return i;
+      }
+    }
+    throw new IllegalArgumentException("Column " + columnName + " not found");
+  }
+
+  private String getCellValueAsString(Cell cell) {
+    return switch (cell.getCellType()) {
+      case STRING -> cell.getStringCellValue();
+      case NUMERIC -> String.valueOf(cell.getNumericCellValue());
+      default -> "";
+    };
+  }
 
   public byte[] getPubmedDataInCSV(UUID jobId) throws IOException {
     try {
-      DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
-      List<PubmedDataDto> pubmedData = jobDataService.getPubmedDataByJobId(jobId);
+      DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
+      List<PubmedDataDto> pubmedData = pubmedDataService.getPubmedDataDto(jobId);
 
       CsvMapper csvMapper = new CsvMapper();
       /*CsvSchema schema = csvMapper.schemaFor(BioPythonDataDto.class).withHeader();
@@ -86,8 +177,8 @@ public class FileGenerationService {
 
   public byte[] getPubmedDataInXLSX(UUID jobId) throws IOException {
     try {
-      DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
-      List<PubmedDataDto> pubmedData = jobDataService.getPubmedDataByJobId(jobId);
+      DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
+      List<PubmedDataDto> pubmedData = pubmedDataService.getPubmedDataDto(jobId);
 
       // Create a new workbook and sheet
       Workbook workbook = new XSSFWorkbook();

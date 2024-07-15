@@ -6,7 +6,8 @@ import com.omnizia.pubmedservice.entity.PubmedData;
 import com.omnizia.pubmedservice.hcpbatchjob.HcpItemProcessor;
 import com.omnizia.pubmedservice.hcpbatchjob.HcpItemReader;
 import com.omnizia.pubmedservice.hcpbatchjob.HcpItemWriter;
-import com.omnizia.pubmedservice.service.JobDataService1;
+import com.omnizia.pubmedservice.service.JobDataService;
+import com.omnizia.pubmedservice.service.PubmedDataService;
 import com.omnizia.pubmedservice.service.PubmedRestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -33,8 +34,9 @@ public class BatchJobConfig {
 
   private final JobRepository jobRepository;
   private final PlatformTransactionManager platformTransactionManager;
-  private final JobDataService1 jobDataService;
+  private final JobDataService jobDataService;
   private final PubmedRestService restService;
+  private final PubmedDataService pubmedDataService;
   private final JobCompletionNotificationListener jobCompletionNotificationListener;
 
   @Bean
@@ -72,6 +74,6 @@ public class BatchJobConfig {
   @Bean
   @StepScope
   public ItemWriter<List<PubmedData>> writer(@Value("#{jobParameters['job_id']}") String jobId) {
-    return new HcpItemWriter(jobId, jobDataService);
+    return new HcpItemWriter(jobId, pubmedDataService);
   }
 }

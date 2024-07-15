@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static com.omnizia.pubmedservice.util.DbSelectorUtils.MCD;
+import static com.omnizia.pubmedservice.constant.DbSelectorConstants.MCD;
 
 @Slf4j
 @RestController

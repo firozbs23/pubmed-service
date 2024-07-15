@@ -2,7 +2,7 @@ package com.omnizia.pubmedservice.service;
 
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.UudidDto;
-import com.omnizia.pubmedservice.util.DbSelectorUtils;
+import com.omnizia.pubmedservice.constant.DbSelectorConstants;
 import com.omnizia.pubmedservice.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,39 +16,39 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static com.omnizia.pubmedservice.util.JobParamUtils.*;
+import static com.omnizia.pubmedservice.constant.BatchJobConstants.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class JobLauncherService {
 
-  private final JobLauncher jobLauncher;
-  private final JobDataService1 jobDataService;
   private final Job job;
+  private final JobLauncher jobLauncher;
+  private final JobStatusService jobStatusService;
 
-    public void runJob(UUID uuid, List<UudidDto> uudidDtos, String jobTitle) {
+  public void runJob(UUID jobId, List<UudidDto> uudidDtos, String jobTitle) {
     Thread.ofVirtual()
         .start(
             () -> {
               try {
-                DataSourceContextHolder.setDataSourceType(DbSelectorUtils.JOB_CONFIG);
+                DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
                 String selectedDb = DataSourceContextHolder.getDataSourceType();
-                log.info("Running job with job_id: {} in DB: {}", uuid, selectedDb);
+                log.info("Running job with job_id: {} in DB: {}", jobId, selectedDb);
 
-                jobDataService.savePubmedJobStatus(uuid, uudidDtos, jobTitle);
+                jobStatusService.savePubmedJobStatus(jobId, uudidDtos, jobTitle);
 
                 JobParameters jobParameters =
                     new JobParametersBuilder()
-                        .addDate(START_AT, new Date())
-                        .addString(JOB_ID, StringUtils.getStringOrEmpty(uuid))
+                        .addDate(JOB_START_AT, new Date())
+                        .addString(JOB_ID, StringUtils.getStringOrEmpty(jobId))
                         .addString(JOB_TITLE, jobTitle)
                         .toJobParameters();
                 jobLauncher.run(job, jobParameters);
               } catch (Exception e) {
-                log.error("Error occurred while launching job with job_id: {}", uuid, e);
+                log.error("Error occurred while launching job with job_id: {}", jobId, e);
               } finally {
-                log.info("Finished job with job_id: {}", uuid);
+                log.info("Finished job with job_id: {}", jobId);
                 DataSourceContextHolder.clearDataSourceType();
               }
             });

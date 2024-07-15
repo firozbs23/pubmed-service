@@ -3,7 +3,7 @@ package com.omnizia.pubmedservice.hcpbatchjob;
 import java.util.List;
 
 import com.omnizia.pubmedservice.entity.PubmedData;
-import com.omnizia.pubmedservice.service.JobDataService1;
+import com.omnizia.pubmedservice.service.PubmedDataService;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.Chunk;
@@ -14,19 +14,20 @@ import org.springframework.context.annotation.Scope;
 @Slf4j
 @Scope("step")
 public class HcpItemWriter implements ItemWriter<List<PubmedData>> {
-  private final JobDataService1 jobDataService;
+
+  private final PubmedDataService pubmedDataService;
 
   public HcpItemWriter(
-      @Value("#{jobParameters['jobId']}") String jobId, JobDataService1 jobDataService) {
+      @Value("#{jobParameters['jobId']}") String jobId, PubmedDataService jobDataService) {
     log.info("Job id inside write: {}", jobId);
-    this.jobDataService = jobDataService;
+    this.pubmedDataService = jobDataService;
   }
 
   @Override
   public void write(@NonNull Chunk<? extends List<PubmedData>> chunk) {
     for (int i = 0; i < chunk.getItems().size(); i++) {
       List<PubmedData> jobDataList = chunk.getItems().get(i);
-      jobDataService.saveJobDataList(jobDataList);
+      pubmedDataService.savePubmedDataList(jobDataList);
     }
   }
 }

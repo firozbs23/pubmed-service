@@ -16,7 +16,7 @@ public class HcpService {
   private final HcpRepository hcpRepository;
 
   public List<HcpDto> getHcp() {
-    List<Hcp> hcps = hcpRepository.findAll();
-    return HcpMapper.mapToHcpDto(hcps);
+    List<Hcp> hcpDataList = hcpRepository.findAll();
+    return HcpMapper.mapToHcpDto(hcpDataList);
   }
 }

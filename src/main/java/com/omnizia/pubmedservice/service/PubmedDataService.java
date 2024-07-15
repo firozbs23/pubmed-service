@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -27,5 +28,18 @@ public class PubmedDataService {
     PubmedData newPubmedData = PubmedDataMapper.mapToPubmedData(pubmedData);
     PubmedData savedPubmed = repository.save(newPubmedData);
     return PubmedDataMapper.mapToPubmedDataDto(savedPubmed);
+  }
+
+  public List<PubmedDataDto> getPubmedDataDto(UUID jobId) {
+    List<PubmedData> pubmedDataList = repository.findByJobId(jobId);
+    return PubmedDataMapper.mapToPubmedDto(pubmedDataList);
+  }
+
+  public void savePubmedDataList(List<PubmedData> jobDataList) {
+    repository.saveAll(jobDataList);
+  }
+
+  public void savePubmedData(PubmedData pubmedData) {
+    repository.save(pubmedData);
   }
 }

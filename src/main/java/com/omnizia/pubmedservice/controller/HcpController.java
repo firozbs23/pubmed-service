@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static com.omnizia.pubmedservice.util.DbSelectorUtils.MCD;
+import static com.omnizia.pubmedservice.constant.DbSelectorConstants.MCD;
 
 @Slf4j
 @RestController

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class PubmedDataMapper {
+
   public static List<PubmedDataDto> mapToPubmedDto(List<PubmedData> pubmedData) {
     return pubmedData.stream()
         .map(
