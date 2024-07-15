@@ -9,6 +9,7 @@ import com.omnizia.pubmedservice.mapper.JobStatusMapper;
 import com.omnizia.pubmedservice.repository.JobStatusRepository;
 import com.omnizia.pubmedservice.repository.PubmedDataRepository;
 import com.omnizia.pubmedservice.util.DbSelectorUtils;
+import com.omnizia.pubmedservice.util.JobStatusUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -102,19 +103,27 @@ public class PubmedService {
                 JobStatus jobStatus = JobStatusMapper.mapToJobStatus(jobStatusDto);
                 jobStatusRepository.save(jobStatus);
 
-                for (String pmid : publicationIds) {
-                  PubmedData pubmedData = restService.getPubmedDataByPmid(pmid);
-                  if (pubmedData != null) {
-                    pubmedData.setJobId(jobStatusDto.getJobId());
-                    pubmedData.setJobTitle(jobTitle);
-                    pubmedData.setTimestamp(OffsetDateTime.now());
-                    pubmedDataRepository.save(pubmedData);
-                    log.info("Pubmed data saved for PMID: {}", pmid);
-                  } else {
-                    log.error("Not able to save pubmed for pmid : {}", pmid);
+                try {
+                  for (String pmid : publicationIds) {
+                    PubmedData pubmedData = restService.getPubmedDataByPmid(pmid);
+                    if (pubmedData != null) {
+                      pubmedData.setJobId(jobStatusDto.getJobId());
+                      pubmedData.setJobTitle(jobTitle);
+                      pubmedData.setTimestamp(OffsetDateTime.now());
+                      pubmedDataRepository.save(pubmedData);
+                      log.info("Pubmed data saved for PMID: {}", pmid);
+                    } else {
+                      log.error("Not able to save pubmed for pmid : {}", pmid);
+                    }
                   }
+                } catch (Exception e) {
+                  jobStatus.setJobStatus(JobStatusUtils.FAILED);
+                  jobStatusRepository.save(jobStatus);
+                  log.error(e.getMessage());
                 }
 
+                jobStatus.setJobStatus(JobStatusUtils.FINISHED);
+                jobStatusRepository.save(jobStatus);
                 log.info("Finished pubmed data saving for JobId: {}", jobStatusDto.getJobId());
               } finally {
                 DataSourceContextHolder.clearDataSourceType();

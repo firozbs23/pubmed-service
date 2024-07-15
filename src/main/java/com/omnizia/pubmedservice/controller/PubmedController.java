@@ -30,7 +30,7 @@ public class PubmedController {
   private final FileProcessingService fileProcessingService;
   private final FileGenerationService fileGenerationService;
   private final PubmedService pubmedService;
-  private final JobDataService jobDataService;
+  private final JobDataService1 jobDataService;
 
   @PostMapping
   public ResponseEntity<JobStatusDto> getPubmedDataInBatchJob(

@@ -24,7 +24,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class FileGenerationService {
 
-  private final JobDataService jobDataService;
+  private final JobDataService1 jobDataService;
 
   public byte[] getPubmedDataInCSV(UUID jobId) throws IOException {
     try {

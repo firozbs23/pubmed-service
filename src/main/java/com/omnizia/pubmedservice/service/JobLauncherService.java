@@ -24,7 +24,7 @@ import static com.omnizia.pubmedservice.util.JobParamUtils.*;
 public class JobLauncherService {
 
   private final JobLauncher jobLauncher;
-  private final JobDataService jobDataService;
+  private final JobDataService1 jobDataService;
   private final Job job;
 
     public void runJob(UUID uuid, List<UudidDto> uudidDtos, String jobTitle) {

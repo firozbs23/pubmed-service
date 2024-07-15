@@ -1,7 +1,7 @@
 package com.omnizia.pubmedservice.component;
 
 import com.omnizia.pubmedservice.dto.JobStatusDto;
-import com.omnizia.pubmedservice.service.JobDataService;
+import com.omnizia.pubmedservice.service.JobDataService1;
 import com.omnizia.pubmedservice.util.JobParamUtils;
 import com.omnizia.pubmedservice.util.JobStatusUtils;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JobCompletionNotificationListener implements JobExecutionListener {
 
-  private final JobDataService jobDataService;
+  private final JobDataService1 jobDataService;
 
   @Override
   public void beforeJob(JobExecution jobExecution) {
