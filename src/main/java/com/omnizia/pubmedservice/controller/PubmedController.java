@@ -78,7 +78,7 @@ public class PubmedController {
     }
   }
 
-  @PostMapping("/pubmed")
+  @PostMapping("/pmid")
   public ResponseEntity<JobStatusDto> getPubmedDataByPmid(
       @RequestParam(HttpParamConstants.PARAM_FILE) MultipartFile file,
       @RequestParam(HttpParamConstants.PARAM_FILE_TYPE) Optional<String> type,
@@ -92,7 +92,7 @@ public class PubmedController {
     try {
       List<String> pubmedIds = fileService.processFile(file, fileType, pubmedId);
       log.info("Total publication_id found : {}", pubmedIds.size());
-      JobStatusDto jobStatus = pubmedService.findPubmedDataByPmid(pubmedIds, jobTitle);
+      JobStatusDto jobStatus = pubmedService.findPubmedDataInBackground(pubmedIds, jobTitle);
       return ResponseEntity.ok(jobStatus);
     } catch (IOException e) {
       throw new RuntimeException("Error while processing file", e);
@@ -108,7 +108,7 @@ public class PubmedController {
     try {
       List<String> pubmedIds = List.of(pubmedId);
       String jobTitle = title.orElse(UNKNOWN);
-      JobStatusDto jobStatus = pubmedService.findPubmedDataByPmid(pubmedIds, jobTitle.trim());
+      JobStatusDto jobStatus = pubmedService.findPubmedDataInBackground(pubmedIds, jobTitle.trim());
       return ResponseEntity.ok(jobStatus);
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Invalid file type", e);
@@ -155,7 +155,7 @@ public class PubmedController {
       JobStatusDto jobStatusDto = jobStatusService.getJobStatusDto(jobId);
       String fileName = jobStatusDto.getJobTitle();
 
-      if (!StringUtils.isNotBlank(fileName)) fileName = fileName.replace(" ", "-") + fileFormat;
+      if (StringUtils.isNotBlank(fileName)) fileName = fileName.replace(" ", "-") + fileFormat;
       else fileName = UNKNOWN + fileFormat;
 
       headers.setContentDispositionFormData(HttpParamConstants.PARAM_ATTACHMENT, fileName);

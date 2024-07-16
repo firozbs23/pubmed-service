@@ -58,7 +58,7 @@ public class PubmedService {
     return JobStatusMapper.mapToJobStatusDto(jobStatus);
   }
 
-  public JobStatusDto findPubmedDataByPmid(List<String> publicationIds, String jobTitle) {
+  public JobStatusDto findPubmedDataInBackground(List<String> publicationIds, String jobTitle) {
     UUID uuid = UUID.randomUUID();
     OffsetDateTime dateTime = OffsetDateTime.now();
     JobStatusDto jobStatusDto =
