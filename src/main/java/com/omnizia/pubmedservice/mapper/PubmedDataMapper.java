@@ -1,6 +1,7 @@
 package com.omnizia.pubmedservice.mapper;
 
 import com.omnizia.pubmedservice.dto.PubmedDataDto;
+import com.omnizia.pubmedservice.entity.JobData;
 import com.omnizia.pubmedservice.entity.PubmedData;
 import com.omnizia.pubmedservice.util.StringUtils;
 
@@ -122,6 +123,41 @@ public class PubmedDataMapper {
         .updatedByJob(pubmed.getUpdatedByJob())
         .specialtyCode(pubmed.getSpecialtyCode())
         .transactionViqId(pubmed.getTransactionViqId())
+        .build();
+  }
+
+  public static PubmedData mapToPubmedData(PubmedData pubmed, JobData jobData) {
+    return PubmedData.builder()
+        .jobId(jobData.getJobId()) // get jobId from jobData
+        .jobTitle(jobData.getJobTitle()) // get jobTitle from jobData
+        .hcpViqId(jobData.getHcpViqId()) // get viqId from jobData
+        .title(pubmed.getTitle())
+        .hcpRole(pubmed.getHcpRole())
+        .countryIso2(pubmed.getCountryIso2())
+        .journal(pubmed.getJournal())
+        .pmcid(pubmed.getPmcid())
+        .doi(pubmed.getDoi())
+        .abstractValue(pubmed.getAbstractValue())
+        .affiliations(pubmed.getAffiliations())
+        .firstName(pubmed.getFirstName())
+        .lastName(pubmed.getLastName())
+        .fullName(pubmed.getFullName())
+        .initials(pubmed.getInitials())
+        .matchingExternalId(jobData.getMatchingExternalId()) // get matching externalId from jobData
+        .meshTerms(pubmed.getMeshTerms())
+        .publicationId(pubmed.getPublicationId())
+        .publicationType(pubmed.getPublicationType())
+        .publicationDate(pubmed.getPublicationDate())
+        .searchName(pubmed.getSearchName())
+        .timestamp(OffsetDateTime.now())
+        .publicationPlatform(pubmed.getPublicationPlatform())
+        .issn(pubmed.getIssn())
+        .url(pubmed.getUrl())
+        .specialtyCode(pubmed.getSpecialtyCode())
+        .createdByJob(pubmed.getCreatedByJob())
+        .createdAt(pubmed.getCreatedAt())
+        .updatedAt(pubmed.getUpdatedAt())
+        .createdByJob(pubmed.getCreatedByJob())
         .build();
   }
 }

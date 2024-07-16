@@ -38,4 +38,8 @@ public class ErrorDataService {
     List<ErrorData> errorDataList = repository.findByJobId(jobId);
     return ErrorDataMapper.mapToErrorDataDto(errorDataList);
   }
+
+  public void saveErrorDataList(List<ErrorData> errorDataList) {
+    repository.saveAll(errorDataList);
+  }
 }

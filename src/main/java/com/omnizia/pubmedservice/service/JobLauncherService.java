@@ -3,6 +3,7 @@ package com.omnizia.pubmedservice.service;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.constant.DbSelectorConstants;
+import com.omnizia.pubmedservice.entity.ErrorData;
 import com.omnizia.pubmedservice.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +27,10 @@ public class JobLauncherService {
   private final Job job;
   private final JobLauncher jobLauncher;
   private final JobStatusService jobStatusService;
+  private final ErrorDataService errorDataService;
 
-  public void runJob(UUID jobId, List<UudidDto> uudidDtos, String jobTitle) {
+  public void runJob(
+      UUID jobId, List<UudidDto> uudidDtos, String jobTitle, List<ErrorData> errorDataList) {
     Thread.ofVirtual()
         .start(
             () -> {
@@ -37,6 +40,7 @@ public class JobLauncherService {
                 log.info("Running job with job_id: {} in DB: {}", jobId, selectedDb);
 
                 jobStatusService.savePubmedJobStatus(jobId, uudidDtos, jobTitle);
+                errorDataService.saveErrorDataList(errorDataList);
 
                 JobParameters jobParameters =
                     new JobParametersBuilder()

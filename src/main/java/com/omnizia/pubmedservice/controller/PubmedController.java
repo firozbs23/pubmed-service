@@ -3,6 +3,7 @@ package com.omnizia.pubmedservice.controller;
 import com.omnizia.pubmedservice.constant.DbSelectorConstants;
 import com.omnizia.pubmedservice.constant.DefaultConstants;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
+import com.omnizia.pubmedservice.dto.ErrorDataDto;
 import com.omnizia.pubmedservice.dto.JobStatusDto;
 import com.omnizia.pubmedservice.dto.PubmedDataDto;
 import com.omnizia.pubmedservice.exception.CustomException;
@@ -35,8 +36,9 @@ public class PubmedController {
   private final JobStatusService jobStatusService;
   private final PubmedDataService pubmedDataService;
   private final HcpService hcpService;
+  private final ErrorDataService errorDataService;
 
-  @PostMapping
+  @PostMapping("/job")
   public ResponseEntity<JobStatusDto> getPubmedDataInBatchJob(
       @RequestParam("file") MultipartFile file,
       @RequestParam("file_type") Optional<String> type,
@@ -59,7 +61,7 @@ public class PubmedController {
     }
   }
 
-  @PostMapping("/{omniziaId}")
+  @PostMapping("/job/{omniziaId}")
   public ResponseEntity<JobStatusDto> processFile(
       @PathVariable String omniziaId, @RequestParam("job_title") Optional<String> title) {
     try {
@@ -78,7 +80,7 @@ public class PubmedController {
     }
   }
 
-  @PostMapping("/pmid")
+  @PostMapping("/job/pmid")
   public ResponseEntity<JobStatusDto> getPubmedDataByPmid(
       @RequestParam("file") MultipartFile file,
       @RequestParam("file_type") Optional<String> type,
@@ -101,7 +103,7 @@ public class PubmedController {
     }
   }
 
-  @PostMapping("/pmid/{pubmedId}")
+  @PostMapping("/job/pmid/{pubmedId}")
   public ResponseEntity<JobStatusDto> getPubmedDataByPmid(
       @PathVariable String pubmedId, @RequestParam("job_title") Optional<String> title) {
     try {
@@ -114,9 +116,8 @@ public class PubmedController {
     }
   }
 
-  @GetMapping
-  public ResponseEntity<List<PubmedDataDto>> getPubmedDataInJsonByJobId(
-      @RequestParam("job_id") UUID jobId) {
+  @GetMapping("/job-data/{jobId}")
+  public ResponseEntity<List<PubmedDataDto>> getJobDataInJsonByJobId(@PathVariable UUID jobId) {
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
       List<PubmedDataDto> pubmedData = pubmedDataService.getPubmedDataDto(jobId);
@@ -126,7 +127,7 @@ public class PubmedController {
     }
   }
 
-  @GetMapping("/file")
+  @GetMapping("/job-data/file")
   public ResponseEntity<byte[]> getPubmedDataInFileByJobId(
       @RequestParam("job_id") UUID jobId, @RequestParam("file_type") Optional<String> type)
       throws IOException {
@@ -159,6 +160,17 @@ public class PubmedController {
       headers.setContentDispositionFormData("attachment", fileName);
       headers.setContentLength(fileInBytes.length);
       return ResponseEntity.ok().headers(headers).body(fileInBytes);
+    } finally {
+      DataSourceContextHolder.clearDataSourceType();
+    }
+  }
+
+  @GetMapping("/job-data/{jobId}/errors")
+  public ResponseEntity<List<ErrorDataDto>> getWrongOmniziaIdList(@PathVariable UUID jobId) {
+    try {
+      DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
+      List<ErrorDataDto> errorDataDtos = errorDataService.getPubmedJobErrorList(jobId);
+      return ResponseEntity.ok(errorDataDtos);
     } finally {
       DataSourceContextHolder.clearDataSourceType();
     }

@@ -4,6 +4,7 @@ import com.omnizia.pubmedservice.constant.DefaultConstants;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.JobStatusDto;
 import com.omnizia.pubmedservice.dto.UudidDto;
+import com.omnizia.pubmedservice.entity.ErrorData;
 import com.omnizia.pubmedservice.entity.JobStatus;
 import com.omnizia.pubmedservice.entity.PubmedData;
 import com.omnizia.pubmedservice.mapper.JobStatusMapper;
@@ -28,6 +29,7 @@ public class PubmedService {
   private final JobLauncherService jobLauncherService;
   private final JobStatusService jobStatusService;
   private final PubmedDataService pubmedDataService;
+  private final HcpService hcpService;
 
   public JobStatusDto startPubmedBatchJob(List<String> omniziaIds, String jobTitle) {
     UUID uuid = UUID.randomUUID();
@@ -81,13 +83,24 @@ public class PubmedService {
               try {
                 DataSourceContextHolder.setDataSourceType(DbSelectorConstants.OLAM);
                 List<UudidDto> uudidList = new ArrayList<>();
+                List<ErrorData> errorDataList = new ArrayList<>();
                 for (String omniziaId : omniziaIds) {
                   omniziaId = omniziaId == null ? StringUtils.EMPTY : omniziaId.trim();
-                  List<UudidDto> uudidDtos = uudidService.getUudidsByOmniziaId(omniziaId);
-                  uudidList.addAll(uudidDtos);
+                  if (hcpService.checkOmniziaIdExists(omniziaId)) {
+                    List<UudidDto> uudidDtos = uudidService.getUudidsByOmniziaId(omniziaId);
+                    uudidList.addAll(uudidDtos);
+                  } else {
+                    errorDataList.add(
+                        ErrorData.builder()
+                            .jobId(uuid)
+                            .hcpViqId(omniziaId)
+                            .jobTitle(jobTitle)
+                            .timestamp(OffsetDateTime.now())
+                            .build());
+                  }
                 }
 
-                jobLauncherService.runJob(uuid, uudidList, jobTitle);
+                jobLauncherService.runJob(uuid, uudidList, jobTitle, errorDataList);
               } finally {
                 DataSourceContextHolder.clearDataSourceType();
               }
