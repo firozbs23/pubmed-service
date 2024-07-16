@@ -14,4 +14,6 @@ public interface HcpRepository extends JpaRepository<Hcp, Long> {
   List<Hcp> findByCountryIso2IgnoreCaseAndSpecialtyCode(String countryIso2, String specialtyCode);
 
   Hcp findByViquiaId(String viquiaId);
+
+  boolean existsByViquiaId(String viquiaId);
 }

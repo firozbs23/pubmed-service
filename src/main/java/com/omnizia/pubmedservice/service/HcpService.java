@@ -13,10 +13,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HcpService {
 
-  private final HcpRepository hcpRepository;
+  private final HcpRepository repository;
 
   public List<HcpDto> getHcp() {
-    List<Hcp> hcpDataList = hcpRepository.findAll();
+    List<Hcp> hcpDataList = repository.findAll();
     return HcpMapper.mapToHcpDto(hcpDataList);
+  }
+
+  public boolean checkOmniziaIdExists(String omniziaId) {
+    return repository.existsByViquiaId(omniziaId);
   }
 }

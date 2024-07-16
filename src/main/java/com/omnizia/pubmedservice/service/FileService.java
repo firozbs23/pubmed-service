@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.omnizia.pubmedservice.constant.FileConstants.*;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -32,12 +30,12 @@ public class FileService {
 
   public List<String> processFile(MultipartFile file, String fileType, String columnName)
       throws IOException {
-    fileType = fileType == null ? FILE_TYPE_CSV : fileType.trim().toLowerCase();
+    fileType = fileType == null ? "csv" : fileType.trim().toLowerCase();
     columnName = columnName.trim();
 
     return switch (fileType) {
-      case FILE_TYPE_CSV -> processCsvFile(file, columnName);
-      case FILE_TYPE_XLSX -> processExcelFile(file, columnName);
+      case "csv" -> processCsvFile(file, columnName);
+      case "xlsx" -> processExcelFile(file, columnName);
       default -> throw new IllegalArgumentException("Unsupported file type: " + fileType);
     };
   }

@@ -13,6 +13,10 @@ public class StringUtils {
     return str != null && !str.isBlank();
   }
 
+  public static boolean isBlank(String str) {
+    return str == null || str.trim().isEmpty();
+  }
+
   public static boolean isValidURL(String urlString) {
     if (urlString == null || urlString.isBlank()) {
       return false;
@@ -22,7 +26,7 @@ public class StringUtils {
   }
 
   public static String getStringOrEmpty(Object object) {
-    return getStringOrDefault(object,EMPTY);
+    return getStringOrDefault(object, EMPTY);
   }
 
   public static String removeExtraWhitespace(String input) {

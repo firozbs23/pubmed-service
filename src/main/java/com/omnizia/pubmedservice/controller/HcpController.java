@@ -6,13 +6,12 @@ import com.omnizia.pubmedservice.service.HcpService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 import static com.omnizia.pubmedservice.constant.DbSelectorConstants.MCD;
+import static com.omnizia.pubmedservice.constant.DbSelectorConstants.OLAM;
 
 @Slf4j
 @RestController
@@ -29,6 +28,17 @@ public class HcpController {
       List<HcpDto> hcpData = hcpService.getHcp();
       log.info("Getting HCP data from {}", DataSourceContextHolder.getDataSourceType());
       return ResponseEntity.ok(hcpData);
+    } finally {
+      DataSourceContextHolder.clearDataSourceType();
+    }
+  }
+
+  @GetMapping("/check-omnizia-id/{omniziaId}")
+  public ResponseEntity<Boolean> checkOmniziaId(@PathVariable String omniziaId) {
+    try {
+      DataSourceContextHolder.setDataSourceType(OLAM);
+      boolean isPresent = hcpService.checkOmniziaIdExists(omniziaId);
+      return ResponseEntity.ok(isPresent);
     } finally {
       DataSourceContextHolder.clearDataSourceType();
     }
