@@ -127,7 +127,7 @@ public class PubmedService {
                       pubmedDataService.savePubmedData(pubmedData);
                       log.info("Pubmed data saved for PMID: {}", pmid);
                     } else {
-                      log.error("Not able to save pubmed for pmid : {}", pmid);
+                       log.error("Not able to save pubmed for pmid : {}", pmid);
                     }
                   }
                 } catch (Exception e) {

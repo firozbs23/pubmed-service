@@ -38,7 +38,7 @@ public class PubmedController {
   private final HcpService hcpService;
   private final ErrorDataService errorDataService;
 
-  @PostMapping("/job")
+  @PostMapping("/batch-job/start")
   public ResponseEntity<JobStatusDto> getPubmedDataInBatchJob(
       @RequestParam("file") MultipartFile file,
       @RequestParam("file_type") Optional<String> type,
@@ -61,9 +61,10 @@ public class PubmedController {
     }
   }
 
-  @PostMapping("/job/{omniziaId}")
+  @PostMapping("/batch-job/start")
   public ResponseEntity<JobStatusDto> processFile(
-      @PathVariable String omniziaId, @RequestParam("job_title") Optional<String> title) {
+      @RequestParam("omnizia_id") String omniziaId,
+      @RequestParam("job_title") Optional<String> title) {
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorConstants.OLAM);
       if (StringUtils.isBlank(omniziaId) || !hcpService.checkOmniziaIdExists(omniziaId)) {
@@ -80,7 +81,7 @@ public class PubmedController {
     }
   }
 
-  @PostMapping("/job/pmid")
+  @PostMapping("/pubmed-job/start")
   public ResponseEntity<JobStatusDto> getPubmedDataByPmid(
       @RequestParam("file") MultipartFile file,
       @RequestParam("file_type") Optional<String> type,
@@ -103,9 +104,10 @@ public class PubmedController {
     }
   }
 
-  @PostMapping("/job/pmid/{pubmedId}")
+  @PostMapping("/pubmed-job/start")
   public ResponseEntity<JobStatusDto> getPubmedDataByPmid(
-      @PathVariable String pubmedId, @RequestParam("job_title") Optional<String> title) {
+      @RequestParam("pubmed_id") String pubmedId,
+      @RequestParam("job_title") Optional<String> title) {
     try {
       List<String> pubmedIds = List.of(pubmedId);
       String jobTitle = title.orElse(UNKNOWN);
@@ -116,34 +118,26 @@ public class PubmedController {
     }
   }
 
-  @GetMapping("/job-data/{jobId}")
-  public ResponseEntity<List<PubmedDataDto>> getJobDataInJsonByJobId(@PathVariable UUID jobId) {
-    try {
-      DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
-      List<PubmedDataDto> pubmedData = pubmedDataService.getPubmedDataDto(jobId);
-      return ResponseEntity.ok(pubmedData);
-    } finally {
-      DataSourceContextHolder.clearDataSourceType();
-    }
-  }
-
-  @GetMapping("/job-data/file")
-  public ResponseEntity<byte[]> getPubmedDataInFileByJobId(
+  @GetMapping("/job/data")
+  public ResponseEntity<?> getPubmedDataInFileByJobId(
       @RequestParam("job_id") UUID jobId, @RequestParam("file_type") Optional<String> type)
       throws IOException {
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
-      String fileType = type.orElse("csv");
+      String fileType = type.orElse("json");
 
       byte[] fileInBytes;
       String fileFormat;
       HttpHeaders headers = new HttpHeaders();
 
-      if (fileType.equalsIgnoreCase("csv")) {
+      if (fileType.trim().equalsIgnoreCase("json")) {
+        List<PubmedDataDto> pubmedData = pubmedDataService.getPubmedDataDto(jobId);
+        return ResponseEntity.ok(pubmedData);
+      } else if (fileType.trim().equalsIgnoreCase("csv")) {
         fileInBytes = fileService.getPubmedDataInCSV(jobId);
         fileFormat = ".csv";
         headers.setContentType(MediaType.parseMediaType("text/csv"));
-      } else if (fileType.equalsIgnoreCase("xlsx")) {
+      } else if (fileType.trim().equalsIgnoreCase("xlsx")) {
         fileInBytes = fileService.getPubmedDataInXLSX(jobId);
         fileFormat = ".xlsx";
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -165,8 +159,9 @@ public class PubmedController {
     }
   }
 
-  @GetMapping("/job-data/{jobId}/errors")
-  public ResponseEntity<List<ErrorDataDto>> getWrongOmniziaIdList(@PathVariable UUID jobId) {
+  @GetMapping("/job/errors")
+  public ResponseEntity<List<ErrorDataDto>> getWrongOmniziaIdList(
+      @RequestParam("job_id") UUID jobId) {
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
       List<ErrorDataDto> errorDataDtos = errorDataService.getPubmedJobErrorList(jobId);
@@ -176,8 +171,8 @@ public class PubmedController {
     }
   }
 
-  @GetMapping("/job-status/{jobId}")
-  public ResponseEntity<JobStatusDto> getPubmedJobStatus(@PathVariable UUID jobId) {
+  @GetMapping("/job/status")
+  public ResponseEntity<JobStatusDto> getPubmedJobStatus(@RequestParam("job_id") UUID jobId) {
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
       log.info("Api call to get job status : {}", jobId);
