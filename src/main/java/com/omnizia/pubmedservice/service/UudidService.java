@@ -15,7 +15,7 @@ public class UudidService {
 
   private final UudidRepository uudidRepository;
 
-  public List<UudidDto> getUudids() {
+  public List<UudidDto> getAllUudid() {
     List<Uudid> uudids = uudidRepository.findAll();
     return UudidMapper.mapToUudidDto(uudids);
   }

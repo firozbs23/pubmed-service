@@ -23,10 +23,7 @@ public class ErrorData {
   private UUID id;
 
   @JsonProperty("job_id")
-  @Column(
-      name = "job_id",
-      insertable = false,
-      updatable = false) // Optional, to prevent changes to the job_id in ErrorData
+  @Column(name = "job_id")
   private UUID jobId;
 
   @JsonProperty("hcp_viq_id")

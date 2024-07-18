@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.PubmedDataDto;
 import com.omnizia.pubmedservice.constant.DbSelectorConstants;
+import com.omnizia.pubmedservice.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -28,8 +29,7 @@ public class FileService {
 
   private final PubmedDataService pubmedDataService;
 
-  public List<String> processFile(MultipartFile file, String fileType, String columnName)
-      throws IOException {
+  public List<String> processFile(MultipartFile file, String fileType, String columnName) {
     fileType = fileType == null ? "csv" : fileType.trim().toLowerCase();
     columnName = columnName.trim();
 
@@ -40,12 +40,12 @@ public class FileService {
     };
   }
 
-  private List<String> processCsvFile(MultipartFile file, String columnName) throws IOException {
+  private List<String> processCsvFile(MultipartFile file, String columnName) {
     List<String> idList = new ArrayList<>();
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
       String headerLine = reader.readLine();
       if (headerLine == null) {
-        throw new IOException("CSV file is empty");
+        throw new CustomException("Invalid File", "CSV file is empty");
       }
 
       // Find the index of the omnizia_id column
@@ -61,11 +61,13 @@ public class FileService {
           idList.add(values[idIndex].replaceAll("^\"|\"$", "")); // Remove surrounding quotes if any
         }
       }
+    } catch (IOException e) {
+      throw new CustomException("Invalid File", e.getMessage());
     }
     return idList;
   }
 
-  private List<String> processExcelFile(MultipartFile file, String columnName) throws IOException {
+  private List<String> processExcelFile(MultipartFile file, String columnName) {
     List<String> idList = new ArrayList<>();
     try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
       Sheet sheet = workbook.getSheetAt(0);
@@ -82,6 +84,8 @@ public class FileService {
           }
         }
       }
+    } catch (IOException e) {
+      throw new CustomException("Invalid File", e.getMessage());
     }
     return idList;
   }

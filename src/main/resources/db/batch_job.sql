@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS job_data
 CREATE TABLE IF NOT EXISTS error_data
 (
     id                   UUID PRIMARY KEY,
-    job_id               UUID REFERENCES job_status (job_id) ON DELETE CASCADE,
+    job_id               UUID NOT NULL,
     hcp_viq_id           VARCHAR(255),
     job_title            VARCHAR(255),
     timestamp            TIMESTAMPTZ

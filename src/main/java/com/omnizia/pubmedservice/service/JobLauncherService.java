@@ -36,8 +36,6 @@ public class JobLauncherService {
             () -> {
               try {
                 DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
-                String selectedDb = DataSourceContextHolder.getDataSourceType();
-                log.info("Running job with job_id: {} in DB: {}", jobId, selectedDb);
 
                 jobStatusService.savePubmedJobStatus(jobId, uudidDtos, jobTitle);
                 errorDataService.saveErrorDataList(errorDataList);

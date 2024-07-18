@@ -23,4 +23,17 @@ public class HcpMapper {
                     .build())
         .toList();
   }
+
+  public static HcpDto mapToHcpDto(Hcp hcp) {
+    return HcpDto.builder()
+        .omniziaId(hcp.getViquiaId())
+        .firstName(hcp.getMiddleName())
+        .middleName(hcp.getMiddleName())
+        .lastName(hcp.getLastName())
+        .countryIso2(hcp.getCountryIso2())
+        .specialtyCode(hcp.getSpecialtyCode())
+        .indicationCity(hcp.getIndicationCity())
+        .nationalId(hcp.getNationalId())
+        .build();
+  }
 }

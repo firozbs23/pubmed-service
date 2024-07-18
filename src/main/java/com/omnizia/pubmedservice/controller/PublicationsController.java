@@ -1,6 +1,7 @@
 package com.omnizia.pubmedservice.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.PublicationsDto;
@@ -21,27 +22,18 @@ public class PublicationsController {
   private final PublicationsService pubService;
 
   @GetMapping
-  ResponseEntity<List<PublicationsDto>> getPublications() {
+  ResponseEntity<List<PublicationsDto>> getPublications(
+      @RequestParam("omnizia_id") Optional<String> omniziaId) {
     try {
       DataSourceContextHolder.setDataSourceType(MCD);
-      List<PublicationsDto> publications = pubService.getPublications();
+      List<PublicationsDto> publications;
+
+      if (omniziaId.isPresent()) {
+        publications = pubService.getPublicationsByOmniziaId(omniziaId.get());
+      } else {
+        publications = pubService.getPublications();
+      }
       log.info("Getting publications from {}", DataSourceContextHolder.getDataSourceType());
-      return ResponseEntity.ok(publications);
-    } finally {
-      DataSourceContextHolder.clearDataSourceType();
-    }
-  }
-
-  @GetMapping("/{omnizia_id}")
-  public ResponseEntity<List<PublicationsDto>> getPublicationsByOmniziaId(
-      @PathVariable("omnizia_id") String omniziaId) {
-    try {
-      DataSourceContextHolder.setDataSourceType(MCD);
-      List<PublicationsDto> publications = pubService.getPublicationsByOmniziaId(omniziaId);
-
-      String selectedDb = DataSourceContextHolder.getDataSourceType();
-      log.info("Getting publications by omnizia_id from {}", selectedDb);
-
       return ResponseEntity.ok(publications);
     } finally {
       DataSourceContextHolder.clearDataSourceType();

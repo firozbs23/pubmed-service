@@ -15,12 +15,17 @@ public class HcpService {
 
   private final HcpRepository repository;
 
-  public List<HcpDto> getHcp() {
+  public List<HcpDto> getAllHcp() {
     List<Hcp> hcpDataList = repository.findAll();
     return HcpMapper.mapToHcpDto(hcpDataList);
   }
 
   public boolean checkOmniziaIdExists(String omniziaId) {
     return repository.existsByViquiaId(omniziaId);
+  }
+
+  public HcpDto getHcpByOmniziaId(String omniziaId) {
+    Hcp hcp = repository.findByViquiaId(omniziaId);
+    return HcpMapper.mapToHcpDto(hcp);
   }
 }

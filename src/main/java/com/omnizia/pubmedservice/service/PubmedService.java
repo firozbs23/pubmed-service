@@ -7,17 +7,20 @@ import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.entity.ErrorData;
 import com.omnizia.pubmedservice.entity.JobStatus;
 import com.omnizia.pubmedservice.entity.PubmedData;
+import com.omnizia.pubmedservice.exception.CustomException;
 import com.omnizia.pubmedservice.mapper.JobStatusMapper;
 import com.omnizia.pubmedservice.constant.DbSelectorConstants;
 import com.omnizia.pubmedservice.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.*;
 
 import static com.omnizia.pubmedservice.constant.BatchJobConstants.*;
+import static com.omnizia.pubmedservice.constant.DefaultConstants.UNKNOWN;
 
 @Slf4j
 @Service
@@ -31,7 +34,7 @@ public class PubmedService {
   private final PubmedDataService pubmedDataService;
   private final HcpService hcpService;
 
-  public JobStatusDto startPubmedBatchJob(List<String> omniziaIds, String jobTitle) {
+  public JobStatusDto startBatchJob(List<String> omniziaIds, String jobTitle) {
     UUID uuid = UUID.randomUUID();
     OffsetDateTime dateTime = OffsetDateTime.now();
     jobTitle = jobTitle == null ? DefaultConstants.UNKNOWN : jobTitle.trim();
@@ -60,7 +63,7 @@ public class PubmedService {
     return JobStatusMapper.mapToJobStatusDto(jobStatus);
   }
 
-  public JobStatusDto findPubmedDataInBackground(List<String> publicationIds, String jobTitle) {
+  public JobStatusDto getPubmedData(List<String> publicationIds, String jobTitle) {
     UUID uuid = UUID.randomUUID();
     OffsetDateTime dateTime = OffsetDateTime.now();
     JobStatusDto jobStatusDto =
@@ -89,7 +92,9 @@ public class PubmedService {
                   if (hcpService.checkOmniziaIdExists(omniziaId)) {
                     List<UudidDto> uudidDtos = uudidService.getUudidsByOmniziaId(omniziaId);
                     uudidList.addAll(uudidDtos);
-                  } else {
+                  }
+                  if (!hcpService.checkOmniziaIdExists(omniziaId)) {
+                    // If omniziaId is wrong, add to error list
                     errorDataList.add(
                         ErrorData.builder()
                             .jobId(uuid)
@@ -127,7 +132,7 @@ public class PubmedService {
                       pubmedDataService.savePubmedData(pubmedData);
                       log.info("Pubmed data saved for PMID: {}", pmid);
                     } else {
-                       log.error("Not able to save pubmed for pmid : {}", pmid);
+                      log.error("Not able to save pubmed for pmid : {}", pmid);
                     }
                   }
                 } catch (Exception e) {
@@ -143,5 +148,30 @@ public class PubmedService {
                 DataSourceContextHolder.clearDataSourceType();
               }
             });
+  }
+
+  public JobStatusDto processIdAndStartBatchJob(String omniziaId, String title) {
+    try {
+      DataSourceContextHolder.setDataSourceType(DbSelectorConstants.OLAM);
+      if (StringUtils.isBlank(omniziaId) || !hcpService.checkOmniziaIdExists(omniziaId)) {
+        throw new CustomException(
+            HttpStatus.BAD_REQUEST.name(), "Your provided omnizia_id is wrong or does not exist");
+      }
+
+      List<String> omniziaIds = List.of(omniziaId.trim());
+      String jobTitle = StringUtils.getStringOrDefault(title, UNKNOWN);
+      return startBatchJob(omniziaIds, jobTitle);
+    } finally {
+      DataSourceContextHolder.clearDataSourceType();
+    }
+  }
+
+  public JobStatusDto getPubmedDataByPmid(String pubmedId, String jobTitle) {
+    try {
+      List<String> pubmedIds = List.of(pubmedId);
+      return getPubmedData(pubmedIds, jobTitle.trim());
+    } catch (IllegalArgumentException e) {
+      throw new CustomException("Invalid File", e.getMessage());
+    }
   }
 }
