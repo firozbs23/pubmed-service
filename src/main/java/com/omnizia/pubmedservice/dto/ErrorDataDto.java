@@ -23,6 +23,9 @@ public class ErrorDataDto {
   @JsonProperty("hcp_viq_id")
   private String hcpViqId;
 
+  @JsonProperty("message")
+  private String message;
+
   @JsonProperty("job_title")
   private String jobTitle;
 

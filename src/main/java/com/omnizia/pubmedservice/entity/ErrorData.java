@@ -30,6 +30,10 @@ public class ErrorData {
   @Column(name = "hcp_viq_id")
   private String hcpViqId;
 
+  @JsonProperty("message")
+  @Column(name = "message")
+  private String message;
+
   @JsonProperty("job_title")
   @Column(name = "job_title")
   private String jobTitle;

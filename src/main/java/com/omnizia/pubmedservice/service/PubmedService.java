@@ -100,6 +100,7 @@ public class PubmedService {
                             .jobId(uuid)
                             .hcpViqId(omniziaId)
                             .jobTitle(jobTitle)
+                            .message("Wrong omnizia id")
                             .timestamp(OffsetDateTime.now())
                             .build());
                   }

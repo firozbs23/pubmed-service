@@ -197,11 +197,12 @@ CREATE TABLE IF NOT EXISTS job_data
 
 CREATE TABLE IF NOT EXISTS error_data
 (
-    id                   UUID PRIMARY KEY,
-    job_id               UUID NOT NULL,
-    hcp_viq_id           VARCHAR(255),
-    job_title            VARCHAR(255),
-    timestamp            TIMESTAMPTZ
+    id         UUID PRIMARY KEY,
+    job_id     UUID NOT NULL,
+    hcp_viq_id VARCHAR(255),
+    message    VARCHAR(255),
+    job_title  VARCHAR(255),
+    timestamp  TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS pubmed_data

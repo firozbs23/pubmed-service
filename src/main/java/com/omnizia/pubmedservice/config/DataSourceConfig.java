@@ -94,7 +94,7 @@ public class DataSourceConfig {
     dataSourceMap.put("dataSource", batchJob);
 
     routingDataSource.setTargetDataSources(dataSourceMap);
-    routingDataSource.setDefaultTargetDataSource(dataSource1);
+    routingDataSource.setDefaultTargetDataSource(batchJob);
 
     return routingDataSource;
   }

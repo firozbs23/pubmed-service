@@ -12,6 +12,7 @@ public class ErrorDataMapper {
         .jobId(errorData.getJobId())
         .hcpViqId(errorData.getHcpViqId())
         .jobTitle(errorData.getJobTitle())
+        .message(errorData.getMessage())
         .timestamp(errorData.getTimestamp())
         .build();
   }
@@ -21,6 +22,7 @@ public class ErrorDataMapper {
         .jobId(errorDataDto.getJobId())
         .hcpViqId(errorDataDto.getHcpViqId())
         .jobTitle(errorDataDto.getJobTitle())
+        .message(errorDataDto.getMessage())
         .timestamp(errorDataDto.getTimestamp())
         .build();
   }
