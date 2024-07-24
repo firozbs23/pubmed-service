@@ -13,6 +13,7 @@ import com.omnizia.pubmedservice.constant.DbSelectorConstants;
 import com.omnizia.pubmedservice.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.JDBCConnectionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -89,20 +90,33 @@ public class PubmedService {
                 List<ErrorData> errorDataList = new ArrayList<>();
                 for (String omniziaId : omniziaIds) {
                   omniziaId = omniziaId == null ? StringUtils.EMPTY : omniziaId.trim();
-                  if (hcpService.checkOmniziaIdExists(omniziaId)) {
-                    List<UudidDto> uudidDtos = uudidService.getUudidsByOmniziaId(omniziaId);
-                    uudidList.addAll(uudidDtos);
-                  }
-                  if (!hcpService.checkOmniziaIdExists(omniziaId)) {
-                    // If omniziaId is wrong, add to error list
+                  try {
+                    if (hcpService.checkOmniziaIdExists(omniziaId)) {
+                      List<UudidDto> uudidDtos = uudidService.getUudidsByOmniziaId(omniziaId);
+                      uudidList.addAll(uudidDtos);
+                    } else {
+                      // If omniziaId is wrong, add to error list
+                      errorDataList.add(
+                          ErrorData.builder()
+                              .jobId(uuid)
+                              .hcpViqId(omniziaId)
+                              .jobTitle(jobTitle)
+                              .message("Wrong omnizia id")
+                              .timestamp(OffsetDateTime.now())
+                              .build());
+                    }
+                  } catch (JDBCConnectionException e) {
+                    // Not able to connect database
                     errorDataList.add(
                         ErrorData.builder()
                             .jobId(uuid)
                             .hcpViqId(omniziaId)
                             .jobTitle(jobTitle)
-                            .message("Wrong omnizia id")
+                            .message(e.getMessage())
                             .timestamp(OffsetDateTime.now())
                             .build());
+
+                    log.error(e.getMessage(), e);
                   }
                 }
 

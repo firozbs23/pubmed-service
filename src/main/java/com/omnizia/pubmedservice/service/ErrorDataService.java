@@ -39,7 +39,7 @@ public class ErrorDataService {
     return ErrorDataMapper.mapToErrorDataDto(errorDataList);
   }
 
-  public void saveErrorDataList(List<ErrorData> errorDataList) {
+  public void saveErrors(List<ErrorData> errorDataList) {
     repository.saveAll(errorDataList);
   }
 }
