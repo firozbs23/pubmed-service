@@ -68,7 +68,7 @@ public class PubmedController {
       @RequestParam(value = "file", required = false) MultipartFile file,
       @RequestParam("file_type") Optional<String> type,
       @RequestParam("id_column_name") Optional<String> idColumnName,
-      @RequestParam("jobTitle") Optional<String> jobTitle,
+      @RequestParam("job_title") Optional<String> jobTitle,
       @RequestParam("pubmed_id") Optional<String> pubmedId) {
 
     String columnName = idColumnName.orElse(DefaultConstants.PUBMED_ID);
