@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.dto.UudidDto;
 import com.omnizia.pubmedservice.service.UudidService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import static com.omnizia.pubmedservice.constant.DbSelectorConstants.MCD;
 
 @Slf4j
+@Hidden
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/uudid")

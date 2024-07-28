@@ -36,7 +36,7 @@ public class PubmedController {
   private final PubmedDataService pubmedDataService;
   private final ErrorDataService errorDataService;
 
-  @PostMapping("/batch-job/start")
+  @PostMapping(value = "/batch-job/start", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<JobStatusDto> getPubmedDataInBatchJob(
       @RequestParam(value = "file", required = false) MultipartFile file,
       @RequestParam("file_type") Optional<String> type,
@@ -63,7 +63,7 @@ public class PubmedController {
     return ResponseEntity.ok(data);
   }
 
-  @PostMapping("/pubmed-job/start")
+  @PostMapping(value = "/pubmed-job/start", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<JobStatusDto> getPubmedDataByPmid(
       @RequestParam(value = "file", required = false) MultipartFile file,
       @RequestParam("file_type") Optional<String> type,
