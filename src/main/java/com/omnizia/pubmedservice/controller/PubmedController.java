@@ -48,10 +48,10 @@ public class PubmedController {
     String fileType = type.orElse("csv");
     JobStatusDto data;
 
-    if (file.isEmpty() && omniziaId.isPresent()) {
+    if ((file == null || file.isEmpty()) && omniziaId.isPresent()) {
       data = pubmedService.processIdAndStartBatchJob(omniziaId.get(), jobTitle.orElse(UNKNOWN));
       log.info("Processing omniziaId : {} and start batch job", omniziaId.get());
-    } else if (!file.isEmpty()) {
+    } else if (file != null && !file.isEmpty()) {
       List<String> omniziaIds = fileService.processFile(file, fileType, idColumn);
       data = pubmedService.startBatchJob(omniziaIds, jobTitle.orElse(file.getOriginalFilename()));
       log.info("Processing file {} and start batch job", file.getOriginalFilename());
@@ -75,9 +75,9 @@ public class PubmedController {
     String fileType = type.orElse("csv"); // File type csv is default
     JobStatusDto data = null;
 
-    if (file.isEmpty() && pubmedId.isPresent()) {
+    if ((file == null || file.isEmpty()) && pubmedId.isPresent()) {
       data = pubmedService.getPubmedDataByPmid(pubmedId.get(), jobTitle.orElse(UNKNOWN));
-    } else if (!file.isEmpty()) {
+    } else if (file != null && !file.isEmpty()) {
       List<String> pubmedIds = fileService.processFile(file, fileType, columnName);
       data = pubmedService.getPubmedData(pubmedIds, jobTitle.orElse(file.getOriginalFilename()));
     }
@@ -139,12 +139,40 @@ public class PubmedController {
   }
 
   @GetMapping("/job/errors")
-  public ResponseEntity<List<ErrorDataDto>> getWrongOmniziaIdList(
-      @RequestParam("job_id") UUID jobId) {
+  public ResponseEntity<?> getWrongOmniziaIdList(
+      @RequestParam("job_id") UUID jobId, @RequestParam("file_type") Optional<String> type) {
+    String fileType = type.orElse("json");
+    byte[] fileInBytes = new byte[0];
+    String fileFormat = ".json";
+    HttpHeaders headers = new HttpHeaders();
+
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
       List<ErrorDataDto> errorDataDtos = errorDataService.getPubmedJobErrorList(jobId);
-      return ResponseEntity.ok(errorDataDtos);
+
+      if (fileType.equalsIgnoreCase("json")) {
+        return ResponseEntity.ok().body(errorDataDtos);
+      } else if (fileType.equalsIgnoreCase("csv")) {
+        fileInBytes = fileService.getErrorsInCSV(errorDataDtos);
+        fileFormat = ".csv";
+        headers.setContentType(MediaType.parseMediaType("text/csv"));
+      } else if (fileType.equalsIgnoreCase("xlsx")) {
+        fileInBytes = fileService.getErrorsInXLSX(errorDataDtos);
+        fileFormat = ".xlsx";
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+      } else {
+        throw new CustomException(
+            "Wrong File Type", "Please provide file_type. File type must be either csv or xlsx.");
+      }
+      String fileName;
+      if (!errorDataDtos.isEmpty()
+          && StringUtils.isNotBlank(errorDataDtos.getFirst().getJobTitle()))
+        fileName = errorDataDtos.getFirst().getJobTitle().replace(" ", "-") + fileFormat;
+      else fileName = UNKNOWN + fileFormat;
+
+      headers.setContentDispositionFormData("attachment", fileName);
+      headers.setContentLength(fileInBytes.length);
+      return ResponseEntity.ok().headers(headers).body(fileInBytes);
     } finally {
       DataSourceContextHolder.clearDataSourceType();
     }

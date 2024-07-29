@@ -30,5 +30,5 @@ public class ErrorDataDto {
   private String jobTitle;
 
   @JsonProperty("timestamp")
-  private OffsetDateTime timestamp;
+  private String timestamp;
 }

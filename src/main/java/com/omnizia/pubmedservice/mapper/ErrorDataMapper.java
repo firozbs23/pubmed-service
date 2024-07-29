@@ -3,6 +3,7 @@ package com.omnizia.pubmedservice.mapper;
 import com.omnizia.pubmedservice.dto.ErrorDataDto;
 import com.omnizia.pubmedservice.entity.ErrorData;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public class ErrorDataMapper {
@@ -13,7 +14,7 @@ public class ErrorDataMapper {
         .hcpViqId(errorData.getHcpViqId())
         .jobTitle(errorData.getJobTitle())
         .message(errorData.getMessage())
-        .timestamp(errorData.getTimestamp())
+        .timestamp(errorData.getTimestamp().toString())
         .build();
   }
 
@@ -23,7 +24,7 @@ public class ErrorDataMapper {
         .hcpViqId(errorDataDto.getHcpViqId())
         .jobTitle(errorDataDto.getJobTitle())
         .message(errorDataDto.getMessage())
-        .timestamp(errorDataDto.getTimestamp())
+        .timestamp(OffsetDateTime.parse(errorDataDto.getTimestamp()))
         .build();
   }
 

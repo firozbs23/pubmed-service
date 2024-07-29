@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
+import com.omnizia.pubmedservice.dto.ErrorDataDto;
 import com.omnizia.pubmedservice.dto.PubmedDataDto;
 import com.omnizia.pubmedservice.constant.DbSelectorConstants;
 import com.omnizia.pubmedservice.exception.CustomException;
@@ -275,6 +276,66 @@ public class FileService {
       return out.toByteArray();
     } finally {
       DataSourceContextHolder.clearDataSourceType();
+    }
+  }
+
+  public byte[] getErrorsInCSV(List<ErrorDataDto> errorDataDtos) {
+
+    try {
+      CsvMapper csvMapper = new CsvMapper();
+
+      // Need to add column manually to keep column  arrangement fixed
+      CsvSchema schema =
+          CsvSchema.builder()
+              .addColumn("hcp_viq_id")
+              .addColumn("message")
+              .addColumn("job_title")
+              .addColumn("timestamp")
+              .addColumn("job_id")
+              .build()
+              .withHeader();
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      ObjectWriter writer = csvMapper.writer(schema);
+      writer.writeValue(out, errorDataDtos);
+      return out.toByteArray();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public byte[] getErrorsInXLSX(List<ErrorDataDto> errorDataDtos) {
+    try {
+      // Create a new workbook and sheet
+      Workbook workbook = new XSSFWorkbook();
+      Sheet sheet = workbook.createSheet("Pubmed Data");
+
+      // Create header row
+      Row headerRow = sheet.createRow(0);
+      String[] headers = {"hcp_viq_id", "message", "job_title", "timestamp", "job_id"};
+
+      for (int i = 0; i < headers.length; i++) {
+        Cell cell = headerRow.createCell(i);
+        cell.setCellValue(headers[i]);
+      }
+
+      // Populate rows with data
+      int rowIdx = 1;
+      for (ErrorDataDto data : errorDataDtos) {
+        Row row = sheet.createRow(rowIdx++);
+        row.createCell(0).setCellValue(data.getHcpViqId());
+        row.createCell(1).setCellValue(data.getMessage());
+        row.createCell(2).setCellValue(data.getJobTitle());
+        row.createCell(3).setCellValue(data.getTimestamp());
+        row.createCell(4).setCellValue(data.getJobId().toString());
+      }
+
+      // Write the workbook to a byte array output stream
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      workbook.write(out);
+      workbook.close();
+      return out.toByteArray();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 }
