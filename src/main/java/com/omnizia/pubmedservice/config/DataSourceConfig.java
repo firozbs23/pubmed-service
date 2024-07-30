@@ -7,6 +7,7 @@ import javax.sql.DataSource;
 
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.constant.DbSelectorConstants;
+import com.omnizia.pubmedservice.util.HostnameUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -56,8 +57,8 @@ public class DataSourceConfig {
   @Bean(name = DbSelectorConstants.JOB_CONFIG)
   public DataSource dataSource() {
     DriverManagerDataSource dataSource = new DriverManagerDataSource();
-    dataSource.setUrl("jdbc:postgresql://localhost:5433/spring_batch_db");
-    // dataSource.setUrl("jdbc:postgresql://35.158.3.137:80/spring_batch_db");
+    String dbUrl = "jdbc:postgresql://" + HostnameUtil.getDBConfigHostname() + "/spring_batch_db";
+    dataSource.setUrl(dbUrl);
     dataSource.setUsername("username");
     dataSource.setPassword("password");
     dataSource.setDriverClassName("org.postgresql.Driver");

@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  spring-job-config-db:
+    image: postgres:latest
+    container_name: spring-job-config-db
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: spring_batch_db
+    ports:
+      - "5433:5433"
+    networks:
+      - pubmed-network
+
+  pubmed-service:
+    image: pubmed-service:latest
+    container_name: pubmed-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - spring-job-config-db
+    networks:
+      - pubmed-network
+
+  biopython-service:
+    image: biopython-service:latest
+    container_name: biopython-service
+    ports:
+      - "5000:5000"
+    networks:
+      - pubmed-network
+
+networks:
+  pubmed-network:
+    driver: bridge
