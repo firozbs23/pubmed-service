@@ -2,7 +2,7 @@ package com.omnizia.pubmedservice.service;
 
 import com.omnizia.pubmedservice.entity.JobData;
 import com.omnizia.pubmedservice.entity.PubmedData;
-import com.omnizia.pubmedservice.util.HostnameUtil;
+import com.omnizia.pubmedservice.util.HostnameUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -21,7 +21,7 @@ public class PubmedRestService {
   private final RestTemplate restTemplate;
 
   public PubmedData getPubmedDataByPmid(String pmid) {
-    String url = HostnameUtil.getBiopythonAppHostname() + "/pubmed/pmid" + "?pmid={pmid}";
+    String url = HostnameUtils.getBiopythonAppHostname() + "/pubmed/pmid" + "?pmid={pmid}";
     try {
       ResponseEntity<PubmedData> responseEntity =
           restTemplate.exchange(
@@ -39,7 +39,7 @@ public class PubmedRestService {
 
   public PubmedData[] getPubmedDataList(JobData jobData) {
     try {
-      String url = HostnameUtil.getBiopythonAppHostname() + "/pubmed" + "?name={name}";
+      String url = HostnameUtils.getBiopythonAppHostname() + "/pubmed" + "?name={name}";
       ResponseEntity<PubmedData[]> responseEntity =
           restTemplate.exchange(
               url,

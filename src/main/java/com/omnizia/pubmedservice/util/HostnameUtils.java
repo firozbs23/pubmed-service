@@ -5,22 +5,25 @@ import java.nio.file.Paths;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-public class HostnameUtil {
+public class HostnameUtils {
 
   public static String getBiopythonAppHostname() {
-    if (isRunningInDocker()) {
+    /* if (isRunningInDocker()) {
       return "http://biopython-service:5000";
     } else {
       return "http://localhost:5000";
-    }
+    }*/
+    return "http://biopython-service:5000";
   }
 
   public static String getDBConfigHostname() {
-    if (isRunningInDocker()) {
-      return "spring-job-config-db:5433";
+    /*if (isRunningInDocker()) {
+      return "spring-job-config-db:5432";
     } else {
       return "localhost:5434";
-    }
+    }*/
+
+    return "spring-job-config-db:5432";
   }
 
   private static boolean isRunningInDocker() {

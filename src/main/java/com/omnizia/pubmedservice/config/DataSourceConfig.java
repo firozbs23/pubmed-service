@@ -7,7 +7,8 @@ import javax.sql.DataSource;
 
 import com.omnizia.pubmedservice.dbcontextholder.DataSourceContextHolder;
 import com.omnizia.pubmedservice.constant.DbSelectorConstants;
-import com.omnizia.pubmedservice.util.HostnameUtil;
+import com.omnizia.pubmedservice.util.HostnameUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -25,6 +26,7 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
+@Slf4j
 @Configuration
 @EntityScan(basePackages = "com.omnizia.pubmedservice.entity")
 @EnableJpaRepositories(basePackages = "com.omnizia.pubmedservice.repository")
@@ -57,7 +59,8 @@ public class DataSourceConfig {
   @Bean(name = DbSelectorConstants.JOB_CONFIG)
   public DataSource dataSource() {
     DriverManagerDataSource dataSource = new DriverManagerDataSource();
-    String dbUrl = "jdbc:postgresql://" + HostnameUtil.getDBConfigHostname() + "/spring_batch_db";
+    String dbUrl = "jdbc:postgresql://" + HostnameUtils.getDBConfigHostname() + "/spring_batch_db";
+    log.info("Job Config DB URL: {}", dbUrl);
     dataSource.setUrl(dbUrl);
     dataSource.setUsername("username");
     dataSource.setPassword("password");

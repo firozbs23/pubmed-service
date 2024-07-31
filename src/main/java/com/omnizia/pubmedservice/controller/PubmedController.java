@@ -148,16 +148,16 @@ public class PubmedController {
 
     try {
       DataSourceContextHolder.setDataSourceType(DbSelectorConstants.JOB_CONFIG);
-      List<ErrorDataDto> errorDataDtos = errorDataService.getPubmedJobErrorList(jobId);
+      List<ErrorDataDto> errors = errorDataService.getPubmedJobErrorList(jobId);
 
       if (fileType.equalsIgnoreCase("json")) {
-        return ResponseEntity.ok().body(errorDataDtos);
+        return ResponseEntity.ok().body(errors);
       } else if (fileType.equalsIgnoreCase("csv")) {
-        fileInBytes = fileService.getErrorsInCSV(errorDataDtos);
+        fileInBytes = fileService.getErrorsInCSV(errors);
         fileFormat = ".csv";
         headers.setContentType(MediaType.parseMediaType("text/csv"));
       } else if (fileType.equalsIgnoreCase("xlsx")) {
-        fileInBytes = fileService.getErrorsInXLSX(errorDataDtos);
+        fileInBytes = fileService.getErrorsInXLSX(errors);
         fileFormat = ".xlsx";
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
       } else {
@@ -165,10 +165,9 @@ public class PubmedController {
             "Wrong File Type", "Please provide file_type. File type must be either csv or xlsx.");
       }
       String fileName;
-      if (!errorDataDtos.isEmpty()
-          && StringUtils.isNotBlank(errorDataDtos.getFirst().getJobTitle()))
-        fileName = errorDataDtos.getFirst().getJobTitle().replace(" ", "-") + fileFormat;
-      else fileName = UNKNOWN + fileFormat;
+      if (!errors.isEmpty() && StringUtils.isNotBlank(errors.getFirst().getJobTitle()))
+        fileName = "Errors_" + errors.getFirst().getJobTitle().replace(" ", "-") + fileFormat;
+      else fileName = "Errors_" + UNKNOWN + fileFormat;
 
       headers.setContentDispositionFormData("attachment", fileName);
       headers.setContentLength(fileInBytes.length);
