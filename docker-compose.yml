@@ -26,8 +26,6 @@ services:
   biopython-service:
     image: biopython-service:latest
     container_name: biopython-service
-    expose:
-      - 5000
     ports:
       - "5000:5000"
     networks:
