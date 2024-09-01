@@ -167,6 +167,12 @@ public class FileService {
               .addColumn("job_title")
               .addColumn("publication_platform")
               .addColumn("search_name")
+              .addColumn("tag_type")
+              .addColumn("tag_category")
+              .addColumn("tag_value")
+              .addColumn("chat_summary")
+              .addColumn("chat_positive")
+              .addColumn("chat_negative")
               .build()
               .withHeader();
       ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -222,7 +228,13 @@ public class FileService {
         "job_id",
         "job_title",
         "publication_platform",
-        "search_name"
+        "search_name",
+        "tag_type",
+        "tag_category",
+        "tag_value",
+        "chat_summary",
+        "chat_positive",
+        "chat_negative"
       };
 
       for (int i = 0; i < headers.length; i++) {
@@ -267,6 +279,12 @@ public class FileService {
         row.createCell(30).setCellValue(data.getJobTitle());
         row.createCell(31).setCellValue(data.getPublicationPlatform());
         row.createCell(32).setCellValue(data.getSearchName());
+        row.createCell(33).setCellValue(data.getTagType());
+        row.createCell(34).setCellValue(data.getTagCategory());
+        row.createCell(35).setCellValue(data.getTagValue());
+        row.createCell(36).setCellValue(data.getChatSummary());
+        row.createCell(37).setCellValue(data.getChatPositive());
+        row.createCell(38).setCellValue(data.getChatNegative());
       }
 
       // Write the workbook to a byte array output stream

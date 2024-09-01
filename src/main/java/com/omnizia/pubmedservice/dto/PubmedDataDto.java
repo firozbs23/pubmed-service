@@ -135,6 +135,30 @@ public class PubmedDataDto {
   @Builder.Default
   private String searchName = "";
 
+  @JsonProperty("tag_type")
+  @Builder.Default
+  private String tagType = "";
+
+  @JsonProperty("tag_category")
+  @Builder.Default
+  private String tagCategory = "";
+
+  @JsonProperty("tag_value")
+  @Builder.Default
+  private String tagValue = "";
+
+  @JsonProperty("chat_summary")
+  @Builder.Default
+  private String chatSummary = "";
+
+  @JsonProperty("chat_positive")
+  @Builder.Default
+  private String chatPositive = "";
+
+  @JsonProperty("chat_negative")
+  @Builder.Default
+  private String chatNegative = "";
+
   @JsonProperty("timestamp")
   @Builder.Default
   private String timestamp = "";

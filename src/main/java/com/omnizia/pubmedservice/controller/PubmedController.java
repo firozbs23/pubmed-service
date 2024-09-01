@@ -25,6 +25,7 @@ import java.util.UUID;
 import static com.omnizia.pubmedservice.constant.DefaultConstants.UNKNOWN;
 
 @Slf4j
+@CrossOrigin(origins = {"https://pubmed-service.omnizia.com", "http://pubmed-service.omnizia.com"})
 @RestController
 @RequestMapping("/api/v1/pubmed")
 @RequiredArgsConstructor
@@ -49,12 +50,12 @@ public class PubmedController {
     JobStatusDto data;
 
     if ((file == null || file.isEmpty()) && omniziaId.isPresent()) {
-      data = pubmedService.processIdAndStartBatchJob(omniziaId.get(), jobTitle.orElse(UNKNOWN));
       log.info("Processing omniziaId : {} and start batch job", omniziaId.get());
+      data = pubmedService.processIdAndStartBatchJob(omniziaId.get(), jobTitle.orElse(UNKNOWN));
     } else if (file != null && !file.isEmpty()) {
       List<String> omniziaIds = fileService.processFile(file, fileType, idColumn);
-      data = pubmedService.startBatchJob(omniziaIds, jobTitle.orElse(file.getOriginalFilename()));
       log.info("Processing file {} and start batch job", file.getOriginalFilename());
+      data = pubmedService.startBatchJob(omniziaIds, jobTitle.orElse(file.getOriginalFilename()));
     } else {
       throw new CustomException(
           "Invalid Request", "You need to provide a file or a valid omnizia id");

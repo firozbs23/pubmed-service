@@ -48,6 +48,12 @@ public class PubmedDataMapper {
                     .updatedByJob(pubmed.getUpdatedByJob())
                     .specialtyCode(pubmed.getSpecialtyCode())
                     .transactionViqId(pubmed.getTransactionViqId())
+                    .tagType(pubmed.getTagType())
+                    .tagCategory(pubmed.getTagCategory())
+                    .tagValue(pubmed.getTagValue())
+                    .chatSummary(pubmed.getChatSummary())
+                    .chatPositive(pubmed.getChatPositive())
+                    .chatNegative(pubmed.getChatNegative())
                     .build())
         .toList();
   }
@@ -86,6 +92,12 @@ public class PubmedDataMapper {
         .updatedByJob(pubmed.getUpdatedByJob())
         .specialtyCode(pubmed.getSpecialtyCode())
         .transactionViqId(pubmed.getTransactionViqId())
+        .tagType(pubmed.getTagType())
+        .tagCategory(pubmed.getTagCategory())
+        .tagValue(pubmed.getTagValue())
+        .chatSummary(pubmed.getChatSummary())
+        .chatPositive(pubmed.getChatPositive())
+        .chatNegative(pubmed.getChatNegative())
         .build();
   }
 
@@ -123,6 +135,12 @@ public class PubmedDataMapper {
         .updatedByJob(pubmed.getUpdatedByJob())
         .specialtyCode(pubmed.getSpecialtyCode())
         .transactionViqId(pubmed.getTransactionViqId())
+        .tagType(pubmed.getTagType())
+        .tagValue(pubmed.getTagValue())
+        .tagCategory(pubmed.getTagCategory())
+        .chatSummary(pubmed.getChatSummary())
+        .chatPositive(pubmed.getChatPositive())
+        .chatNegative(pubmed.getChatNegative())
         .build();
   }
 
@@ -158,6 +176,12 @@ public class PubmedDataMapper {
         .createdAt(pubmed.getCreatedAt())
         .updatedAt(pubmed.getUpdatedAt())
         .createdByJob(pubmed.getCreatedByJob())
+        .tagType(pubmed.getTagType())
+        .tagValue(pubmed.getTagValue())
+        .tagCategory(pubmed.getTagCategory())
+        .chatSummary(pubmed.getChatSummary())
+        .chatPositive(pubmed.getChatPositive())
+        .chatNegative(pubmed.getChatNegative())
         .build();
   }
 }

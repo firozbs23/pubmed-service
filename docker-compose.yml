@@ -14,17 +14,17 @@ services:
       - pubmed-network
 
   pubmed-service:
-    image: fmahmud26/pubmed-service:v2024.7.1
+    image: fmahmud26/pubmed-service:v2024.8.13
     container_name: pubmed-service
     ports:
-      - "80:8080"
+      - "8081:8080"
     depends_on:
       - spring-job-config-db
     networks:
       - pubmed-network
 
   biopython-service:
-    image: fmahmud26/biopython-service:v2024.7.1
+    image: fmahmud26/biopython-service:v2024.8.5
     container_name: biopython-service
     ports:
       - "5000:5000"

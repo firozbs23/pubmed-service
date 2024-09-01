@@ -92,10 +92,13 @@ public class PubmedService {
                   omniziaId = omniziaId == null ? StringUtils.EMPTY : omniziaId.trim();
                   try {
                     if (hcpService.checkOmniziaIdExists(omniziaId)) {
+                      log.info("Omnizia id {} is present.", omniziaId);
                       List<UudidDto> uudidDtos = uudidService.getUudidsByOmniziaId(omniziaId);
+                      log.info("UUDID size: {}", uudidDtos.size());
                       uudidList.addAll(uudidDtos);
                     } else {
                       // If omniziaId is wrong, add to error list
+                      log.info("Omnizia id : {} is nor found.", omniziaId);
                       errorDataList.add(
                           ErrorData.builder()
                               .jobId(uuid)

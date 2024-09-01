@@ -9,10 +9,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class JobStatusService {
 
@@ -46,7 +48,14 @@ public class JobStatusService {
   }
 
   @Transactional
-  public void saveJobStatus(JobStatus jobStatus) {
-    repository.save(jobStatus);
+  public JobStatus saveJobStatus(JobStatus jobStatus) {
+    Optional<JobStatus> existingJobStatus = repository.findById(jobStatus.getJobId());
+    if (existingJobStatus.isPresent()) {
+      JobStatus currentJobStatus = existingJobStatus.get();
+      currentJobStatus.setJobStatus(jobStatus.getJobStatus());
+      currentJobStatus.setJobDataList(jobStatus.getJobDataList());
+      currentJobStatus.setTimestamp(jobStatus.getTimestamp());
+      return repository.save(currentJobStatus);
+    } else return repository.save(jobStatus);
   }
 }

@@ -51,6 +51,7 @@ public class JobLauncherService {
                         .build();
 
                 if (!jobErrors.isEmpty()) errorDataService.saveErrors(jobErrors);
+
                 if (!uudidDtos.isEmpty()) {
                   jobStatusService.saveJobStatus(jobStatus);
 

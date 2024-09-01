@@ -155,6 +155,30 @@ public class PubmedData {
   @Column(name = "search_name")
   private String searchName;
 
+  @JsonProperty("tag_type")
+  @Column(name = "tag_type")
+  private String tagType;
+
+  @JsonProperty("tag_category")
+  @Column(name = "tag_category")
+  private String tagCategory;
+
+  @JsonProperty("tag_value")
+  @Column(name = "tag_value")
+  private String tagValue;
+
+  @JsonProperty("chat_summary")
+  @Column(name = "chat_summary")
+  private String chatSummary;
+
+  @JsonProperty("chat_positive")
+  @Column(name = "chat_positive")
+  private String chatPositive;
+
+  @JsonProperty("chat_negative")
+  @Column(name = "chat_negative")
+  private String chatNegative;
+
   @JsonProperty("timestamp")
   @Column(name = "timestamp")
   private OffsetDateTime timestamp;

@@ -35,8 +35,7 @@ public class JobStatus {
   @Column(name = "timestamp")
   private OffsetDateTime timestamp;
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-  @JoinColumn(name = "job_id", referencedColumnName = "job_id")
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "jobStatus")
   @JsonProperty("job_data_list")
   private List<JobData> jobDataList;
 }

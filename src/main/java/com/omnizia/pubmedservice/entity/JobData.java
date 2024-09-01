@@ -24,11 +24,16 @@ public class JobData {
   private UUID id;
 
   @JsonProperty("job_id")
-  @Column(
-      name = "job_id",
-      insertable = false,
-      updatable = false) // Optional, to prevent changes to the job_id in JobData
+  @Column(name = "job_id")
   private UUID jobId;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(
+      name = "job_id",
+      referencedColumnName = "job_id",
+      insertable = false,
+      updatable = false)
+  private JobStatus jobStatus;
 
   @JsonProperty("hcp_viq_id")
   @Column(name = "hcp_viq_id")

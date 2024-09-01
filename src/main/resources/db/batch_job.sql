@@ -241,5 +241,11 @@ CREATE TABLE IF NOT EXISTS pubmed_data
     mesh_terms           TEXT,
     publication_platform VARCHAR(255),
     search_name          VARCHAR(255),
+    tag_type             VARCHAR(255),
+    tag_category         VARCHAR(255),
+    tag_value            VARCHAR(255),
+    chat_summary         TEXT,
+    chat_positive        TEXT,
+    chat_negative        TEXT,
     timestamp            TIMESTAMPTZ
 );

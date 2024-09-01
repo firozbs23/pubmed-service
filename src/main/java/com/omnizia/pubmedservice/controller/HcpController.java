@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-import static com.omnizia.pubmedservice.constant.DbSelectorConstants.MCD;
 import static com.omnizia.pubmedservice.constant.DbSelectorConstants.OLAM;
 
 @Slf4j
@@ -25,7 +24,7 @@ public class HcpController {
   @GetMapping
   public ResponseEntity<?> getHcp(@RequestParam(value = "omnizia_id") Optional<String> omniziaId) {
     try {
-      DataSourceContextHolder.setDataSourceType(MCD);
+      DataSourceContextHolder.setDataSourceType(OLAM);
       if (omniziaId.isPresent()) {
         var data = hcpService.getHcpByOmniziaId(omniziaId.get());
         return ResponseEntity.ok(data);

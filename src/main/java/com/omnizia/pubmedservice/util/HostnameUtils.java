@@ -14,6 +14,7 @@ public class HostnameUtils {
       return "http://localhost:5000";
     }*/
     return "http://biopython-service:5000";
+    // return "http://localhost:5000";
   }
 
   public static String getDBConfigHostname() {
@@ -24,6 +25,7 @@ public class HostnameUtils {
     }*/
 
     return "spring-job-config-db:5432";
+    // return "localhost:5433";
   }
 
   private static boolean isRunningInDocker() {
